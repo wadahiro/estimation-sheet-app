@@ -13,7 +13,7 @@ SELLER = SELLER ? SELLER.trim() : 'default';
 
 module.exports = {
   target: 'web',
-  entry: ['babel-polyfill', './src/script/index.tsx'],
+  entry: ['babel-polyfill', './src/script/index.tsx', './src/style/main.scss'],
   output: {
     path: path.join(__dirname, '../dist/' + SELLER),
     // publicPath: '',
@@ -25,6 +25,10 @@ module.exports = {
       {
         test: /\.(c|t)sv$/,
         loaders: ['DataLoader?seller=' + SELLER],
+      },
+      {
+        test: /\.scss$/,
+        loader: 'style-loader!css-loader!sass-loader',
       },
       {
         test: /\.ts(x?)$/,
@@ -75,14 +79,14 @@ module.exports = {
       hash: false,
       includeSourcemap: NODE_ENV === 'production' ? false : true,
     }),
-    new AddAssetHtmlPlugin({
-      filename: require.resolve('../node_modules/react-mdl/extra/material.css'),
-      publicPath: 'assets',
-      outputPath: 'assets',
-      hash: false,
-      includeSourcemap: false,
-      typeOfAsset: 'css'
-    }),
+    // new AddAssetHtmlPlugin({
+    //   filename: require.resolve('../node_modules/react-mdl/extra/material.css'),
+    //   publicPath: 'assets',
+    //   outputPath: 'assets',
+    //   hash: false,
+    //   includeSourcemap: false,
+    //   typeOfAsset: 'css'
+    // }),
     new AddAssetHtmlPlugin({
       filename: require.resolve('../node_modules/react-mdl/extra/material.js'),
       publicPath: 'assets',

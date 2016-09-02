@@ -55,11 +55,11 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             });
 
         case 'ADD_ITEM':
-            const item = state.priceList.find(x => x.id === state.selected);
+            const item = state.priceList.find(x => x.id === action.payload.id);
             if (item) {
                 const cost = item.suppliersPrice ? item.suppliersPrice : item.price / 4;
                 return Object.assign({}, state, {
-                    selected: '',
+                    selected: null,
                     priceList: state.priceList.map(x => {
                         if (x.id === item.id) {
                             x.added = true;

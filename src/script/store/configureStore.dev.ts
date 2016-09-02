@@ -17,7 +17,7 @@ export default function configureStore(initialState) {
     // Note: only Redux >= 3.1.0 supports passing enhancer as third argument.
     // See https://github.com/rackt/redux/releases/tag/v3.1.0
     // const store = createStore(rootReducer, initialState, enhancer);
-    const store = createStore(rootReducer, initialState);
+    const store = createStore(rootReducer, enhancer);
 
     // Hot reload reducers (requires Webpack or Browserify HMR to be enabled)
     // See https://github.com/erikras/react-redux-universal-hot-example/issues/44#issuecomment-132260397

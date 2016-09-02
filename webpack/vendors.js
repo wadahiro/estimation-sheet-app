@@ -4,6 +4,8 @@ require('react-redux');
 require('redux');
 
 // add other libraries here as well
+require('react-mdl');
+reauire('react-input-enhancements');
 
 // for dev
 if (process.env.NODE_ENV !== 'production') {

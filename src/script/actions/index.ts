@@ -24,10 +24,16 @@ export function setItem(id: string): SetItem {
 
 export interface AddItem extends Action {
     type: 'ADD_ITEM';
+    payload: {
+        id: string;
+    }
 }
-export function addItem(): AddItem {
+export function addItem(id: string): AddItem {
     return {
-        type: 'ADD_ITEM'
+        type: 'ADD_ITEM',
+        payload: {
+            id
+        }
     };
 }
 

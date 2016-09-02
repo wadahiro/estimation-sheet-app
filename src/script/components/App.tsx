@@ -29,12 +29,22 @@ interface Option {
 
 class App extends React.Component<Props, void> {
     onChange = (value) => {
-        console.log(value)
+        console.log('onChange:', value)
         this.props.dispatch(Actions.setItem(value));
     };
 
-    addItem = (e) => {
-        this.props.dispatch(Actions.addItem());
+    handleEnter = (e: React.KeyboardEvent) => {
+        // if (e.key === 'Enter') {
+        //     e.preventDefault();
+        //     this.addItem(null);
+        // }
+    };
+
+    addItem = (id: string) => {
+        console.log('addItem ', id)
+        setTimeout(() => {
+            this.props.dispatch(Actions.addItem(id));
+        });
     };
 
     deleteItem = (id: string) => (e) => {
@@ -98,10 +108,6 @@ class App extends React.Component<Props, void> {
             profitRate: ((receipt - cost) / receipt) * 100
         }
 
-        const tdStyle = {
-            wordWrap: 'break-word'
-        };
-
         return (
             <div>
                 <M.Layout fixedHeader>
@@ -113,31 +119,34 @@ class App extends React.Component<Props, void> {
                     <M.Content>
                         <div style={{ width: '90%', margin: 'auto' }}>
                             <M.Grid>
-                                <M.Cell col={8}>
+                                <M.Cell col={5}>
                                     <div>
-                                        <Combobox defaultValue={selected}
+                                        <Combobox
+                                            defaultValue={selected}
                                             options={priceList}
                                             dropdownProps={{ style: { width: '100%' } }}
-                                            onValueChange={this.onChange}
+                                            onValueChange={this.addItem}
                                             onChange={e => this.onChange(e.target.value)}
                                             autocomplete>
-                                            {inputProps =>
-                                                <M.Textfield
+                                            {inputProps => {
+                                                console.log('update1', selected)
+                                                console.log('update2', inputProps.value)
+                                                return <M.Textfield
                                                     {...inputProps}
+                                                    className='select-item'
                                                     label=''
                                                     style={{ width: '100%' }}
                                                     placeholder='商品を選択してください'
                                                     expandableIcon='search'
+                                                    onKeyPress={this.handleEnter}
                                                     />
-                                            }
+                                            } }
                                         </Combobox>
                                     </div>
                                 </M.Cell>
                                 <M.Cell col={1}>
-                                    <M.Button raised accent ripple onClick={this.addItem}>追加</M.Button>
                                 </M.Cell>
-
-                                <M.Cell col={2}>
+                                <M.Cell col={6}>
                                     <M.DataTable
                                         style={{ width: '100%' }}
                                         rows={[sum]}
@@ -161,25 +170,18 @@ class App extends React.Component<Props, void> {
                                         rowKeyColumn='id'
                                         rows={purchaseItems}
                                         >
-                                        <M.TableHeader name='id' tooltip='ID' style={{ width: 10 }}>ID</M.TableHeader>
-                                        <M.TableHeader numeric name='itemId' style={tdStyle}>商品番号</M.TableHeader>
-                                        <M.TableHeader numeric name='name' style={tdStyle}>商品名</M.TableHeader>
-                                        <M.TableHeader numeric name='menu' style={tdStyle}>メニュー</M.TableHeader>
-                                        <M.TableHeader numeric name='unit' style={{ width: 20 }}> 単位</M.TableHeader>
+                                        <M.TableHeader name='displayId' style={{ width: 50 }}>#</M.TableHeader>
+                                        <M.TableHeader numeric name='itemId'>商品番号</M.TableHeader>
+                                        <M.TableHeader numeric name='name'>商品名</M.TableHeader>
+                                        <M.TableHeader numeric name='menu'>メニュー</M.TableHeader>
+                                        <M.TableHeader numeric name='unit'> 単位</M.TableHeader>
                                         <M.TableHeader numeric name='quantity' cellFormatter={this.editableQuantity}>個数</M.TableHeader>
                                         {showDetail &&
                                             <M.TableHeader numeric name='suppliersPrice' cellFormatter={toYen}>仕入単価</M.TableHeader>
                                         }
                                         <M.TableHeader numeric name='price' cellFormatter={toYen} tooltip='価格'>価格</M.TableHeader>
-                                        <M.TableHeader name='action' cellFormatter={this.renderAction}>アクション</M.TableHeader>
+                                        <M.TableHeader numeric name='action' cellFormatter={this.renderAction}></M.TableHeader>
                                     </M.DataTable>
-                                </M.Cell>
-                            </M.Grid>
-                            <M.Grid>
-                                <M.Cell col={10}>
-                                </M.Cell>
-                                <M.Cell col={2}>
-                                    <M.Button raised accent ripple onClick={this.download}>ファイルに保存</M.Button>
                                 </M.Cell>
                             </M.Grid>
                         </div>
@@ -208,18 +210,13 @@ function mapStateToProps(state: RootState, props: Props): Props {
 }
 
 function toSelectItems(items: Item[]): Option[] {
-    const options: Option[] = [
-        { label: '商品を選択してください', text: '', disabled: true, static: true },
-    ];
-    const priceOptions: Option[] = items.map(x => {
+    const priceOptions: Option[] = items.filter(x => !x.added).map(x => {
         return {
             text: `${x.name} ${x.itemId} ${x.menu}`,
             value: x.id
         } as Option;
     });
-    const selectedPriceList = options.concat(priceOptions);
-
-    return selectedPriceList;
+    return priceOptions;
 }
 
 const AppContainer = connect(
