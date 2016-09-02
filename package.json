@@ -56,6 +56,7 @@
     "react-input-enhancements": "^0.4.12",
     "react-mdl": "^1.7.1",
     "react-redux": "^4.4.5",
-    "redux": "^3.5.2"
+    "redux": "^3.5.2",
+    "reselect": "^2.5.3"
   }
 }

@@ -30,7 +30,8 @@ export interface Item {
     added: boolean;
 }
 
-export interface PurchaseItem extends Item {
+export interface PurchaseItem {
+    id: string;
     displayId: number;
     quantity: number;
     cost: number;

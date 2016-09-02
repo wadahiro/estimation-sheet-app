@@ -3,8 +3,10 @@ import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 import * as M from 'react-mdl';
 import { Header } from 'react-mdl';
+import { createSelector } from 'reselect';
 
 import * as Actions from '../actions';
+import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem } from '../selectors';
 import { RootState, Item, PurchaseItem } from '../reducers';
 
 const { Combobox } = require('react-input-enhancements');
@@ -17,27 +19,13 @@ interface Props {
     selected?: string;
     dollarExchangeRate?: number;
     purchaseItems?: PurchaseItem[];
-}
-
-interface Option {
-    label?: string;
-    text: string;
-    disabled?: boolean;
-    static?: boolean;
-    value?: string
+    purchaseDetailItems?: PurchaseDetailItem[];
 }
 
 class App extends React.Component<Props, void> {
     onChange = (value) => {
         console.log('onChange:', value)
         this.props.dispatch(Actions.setItem(value));
-    };
-
-    handleEnter = (e: React.KeyboardEvent) => {
-        // if (e.key === 'Enter') {
-        //     e.preventDefault();
-        //     this.addItem(null);
-        // }
     };
 
     addItem = (id: string) => {
@@ -51,19 +39,28 @@ class App extends React.Component<Props, void> {
         this.props.dispatch(Actions.deleteItem(id));
     };
 
-    editableQuantity = (value, item: Item) => {
+    editableQuantity = (value, item: PurchaseDetailItem) => {
         return <div style={{ marginLeft: 10 }}>
             <M.Textfield label='個数' value={value} type='number' onChange={this.modifyQuantity(item)} />
         </div>;
     };
 
-    modifyQuantity = (item: Item) => (e) => {
+    modifyQuantity = (item: PurchaseDetailItem) => (e) => {
         const quantity = Number(e.target.value);
         this.props.dispatch(Actions.modifyQuantity(item.id, quantity));
     };
 
-    renderAction = (value, item: Item) => {
+    renderAction = (value, item: PurchaseDetailItem) => {
         return <M.Button raised accent ripple onClick={this.deleteItem(item.id)}>削除</M.Button>;
+    };
+
+    renderPrice = (value: number, item: PurchaseDetailItem) => {
+        if (item.quantity > 1) {
+            const sum = value * item.quantity;
+            return <span>{toYen(sum)}<br /><span style={{fontSize: 10}}>(単価: {toYen(value)})</span></span>;
+        } else {
+            return <span>{toYen(value)}</span>;
+        }
     };
 
     download = (e) => {
@@ -98,10 +95,11 @@ class App extends React.Component<Props, void> {
     };
 
     render() {
-        const { showDetail, priceList, selected, purchaseItems } = this.props;
+        const { showDetail, priceList, selected, purchaseDetailItems } = this.props;
 
-        const cost = purchaseItems.reduce((s, x) => { s += (x.cost * (x.quantity || 0)); return s; }, 0);
-        const receipt = purchaseItems.reduce((s, x) => { s += (x.price * (x.quantity || 0)); return s; }, 0);
+        // calc sum
+        const cost = purchaseDetailItems.reduce((s, x) => { s += (x.cost * (x.quantity || 0)); return s; }, 0);
+        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity || 0)); return s; }, 0);
         const sum = {
             cost,
             receipt,
@@ -119,7 +117,7 @@ class App extends React.Component<Props, void> {
                     <M.Content>
                         <div style={{ width: '90%', margin: 'auto' }}>
                             <M.Grid>
-                                <M.Cell col={5}>
+                                <M.Cell col={8}>
                                     <div>
                                         <Combobox
                                             defaultValue={selected}
@@ -138,15 +136,12 @@ class App extends React.Component<Props, void> {
                                                     style={{ width: '100%' }}
                                                     placeholder='商品を選択してください'
                                                     expandableIcon='search'
-                                                    onKeyPress={this.handleEnter}
                                                     />
                                             } }
                                         </Combobox>
                                     </div>
                                 </M.Cell>
-                                <M.Cell col={1}>
-                                </M.Cell>
-                                <M.Cell col={6}>
+                                <M.Cell col={4}>
                                     <M.DataTable
                                         style={{ width: '100%' }}
                                         rows={[sum]}
@@ -168,7 +163,7 @@ class App extends React.Component<Props, void> {
                                         style={{ width: '100%', tableLayout: 'fixed' }}
                                         shadow={0}
                                         rowKeyColumn='id'
-                                        rows={purchaseItems}
+                                        rows={purchaseDetailItems}
                                         >
                                         <M.TableHeader name='displayId' style={{ width: 50 }}>#</M.TableHeader>
                                         <M.TableHeader numeric name='itemId'>商品番号</M.TableHeader>
@@ -179,15 +174,22 @@ class App extends React.Component<Props, void> {
                                         {showDetail &&
                                             <M.TableHeader numeric name='suppliersPrice' cellFormatter={toYen}>仕入単価</M.TableHeader>
                                         }
-                                        <M.TableHeader numeric name='price' cellFormatter={toYen} tooltip='価格'>価格</M.TableHeader>
+                                        <M.TableHeader numeric name='price' cellFormatter={this.renderPrice} tooltip='価格'>価格</M.TableHeader>
                                         <M.TableHeader numeric name='action' cellFormatter={this.renderAction}></M.TableHeader>
                                     </M.DataTable>
+                                </M.Cell>
+                            </M.Grid>
+                            <M.Grid>
+                                <M.Cell col={10}>
+                                </M.Cell>
+                                <M.Cell col={2}>
+                                    <M.Button raised colored ripple onClick={this.download}>ファイルに保存</M.Button>
                                 </M.Cell>
                             </M.Grid>
                         </div>
                     </M.Content>
                 </M.Layout>
-            </div>
+            </div >
         );
     }
 }
@@ -202,21 +204,12 @@ function toYen(price: number) {
 function mapStateToProps(state: RootState, props: Props): Props {
     return {
         showDetail: state.app.showDetail,
-        priceList: toSelectItems(state.app.priceList),
+        priceList: getVisibleOptions(state),
         selected: state.app.selected,
         dollarExchangeRate: state.app.dollarExchangeRate,
-        purchaseItems: state.app.purchaseItems
+        purchaseItems: state.app.purchaseItems,
+        purchaseDetailItems: getPurchaseDetailItems(state)
     };
-}
-
-function toSelectItems(items: Item[]): Option[] {
-    const priceOptions: Option[] = items.filter(x => !x.added).map(x => {
-        return {
-            text: `${x.name} ${x.itemId} ${x.menu}`,
-            value: x.id
-        } as Option;
-    });
-    return priceOptions;
 }
 
 const AppContainer = connect(
