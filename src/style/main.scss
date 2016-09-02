@@ -1,0 +1,10 @@
+@import "~react-mdl/extra/_layout.scss";
+
+body {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+td {
+    word-break: break-all;
+}

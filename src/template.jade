@@ -1,0 +1,11 @@
+doctype html
+html
+  head
+    meta(http-equiv="Content-type" content="text/html; charset=utf-8")
+    title "概算見積書"
+  body
+    div(id="app")
+    each cssFile in htmlWebpackPlugin.files.css
+      style !{compilation.assets[cssFile.substr(htmlWebpackPlugin.files.publicPath.length)].source()}
+    each jsFile in htmlWebpackPlugin.files.js
+      script(type="text/javascript") !{compilation.assets[jsFile.substr(htmlWebpackPlugin.files.publicPath.length)].source()}
