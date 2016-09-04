@@ -26,7 +26,7 @@ var PURCHASE_ITEMS_COLUMNS = SELLER === 'default' ?
     { name: 'name', 'label': '商品名' },
     { name: 'menu', 'label': 'メニュー' },
     { name: 'unit', 'label': '単位' },
-    { name: 'suppliersPrice', 'label': '仕入れ単価', type: 'yen' }
+    { name: 'suppliersPrice', 'label': '仕入単価', type: 'yen' }
   ]
   :
   [
