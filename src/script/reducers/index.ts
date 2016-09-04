@@ -26,8 +26,6 @@ export interface Item {
     price: number;
     suppliersPrice: number;
     seller: string;
-
-    added: boolean;
 }
 
 export interface PurchaseItem {
@@ -61,16 +59,9 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 const cost = item.suppliersPrice ? item.suppliersPrice : item.price / 4;
                 return Object.assign({}, state, {
                     selected: null,
-                    priceList: state.priceList.map(x => {
-                        if (x.id === item.id) {
-                            x.added = true;
-                        }
-                        return x;
-                    }),
                     purchaseItems: state.purchaseItems.concat(Object.assign({}, item, {
                         displayId: state.purchaseItems.length + 1,
-                        cost,
-                        added: true
+                        cost
                     }))
                 });
             }
@@ -80,12 +71,6 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             const deleteItem = state.purchaseItems.find(x => x.id === action.payload.id);
             if (deleteItem) {
                 return Object.assign({}, state, {
-                    priceList: state.priceList.map(x => {
-                        if (x.id === deleteItem.id) {
-                            x.added = false;
-                        }
-                        return x;
-                    }),
                     purchaseItems: state.purchaseItems.filter(x => x.id !== deleteItem.id)
                 });
             }
