@@ -4,7 +4,9 @@ export type Actions =
     SearchItem |
     AddItem |
     DeleteItem |
-    ModifyQuantity
+    ModifyQuantity |
+    Undo |
+    Redo
     ;
 
 export interface SearchItem extends Action {
@@ -69,5 +71,20 @@ export function modifyQuantity(id, quantity): ModifyQuantity {
     };
 }
 
+export interface Undo extends Action {
+    type: 'UNDO';
+}
+export function undo(): Undo {
+    return {
+        type: 'UNDO'
+    };
+}
 
-
+export interface Redo extends Action {
+    type: 'REDO';
+}
+export function redo(): Redo {
+    return {
+        type: 'REDO'
+    };
+}

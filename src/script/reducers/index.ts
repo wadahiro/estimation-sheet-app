@@ -16,6 +16,8 @@ export interface AppState {
     searchWord: string;
     dollarExchangeRate: number;
     purchaseItems: PurchaseItem[];
+
+    appHistory: AppHistory;
 }
 
 export interface Column {
@@ -43,29 +45,96 @@ export interface PurchaseItem {
     quantity: number;
 }
 
+export interface AppHistory {
+    current: number;
+    history: {
+        dollarExchangeRate: number;
+        purchaseItems: PurchaseItem[]
+    }[];
+}
+
 function init(): AppState {
+    const dollarExchangeRate = 120;
+    const purchaseItems = window['RESTORE_PURCHASE_ITEMS'] ? window['RESTORE_PURCHASE_ITEMS'] : [];
+
     return {
         summaryColumns: process.env.SUMMARY_COLUMNS,
         purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
 
         searchWord: null,
         priceList: initPriceList(PRICE_LIST),
-        dollarExchangeRate: 120,
-        purchaseItems: window['RESTORE_PURCHASE_ITEMS'] ? window['RESTORE_PURCHASE_ITEMS'] : []
+
+        dollarExchangeRate,
+        purchaseItems,
+
+        appHistory: {
+            current: 0,
+            history: [{
+                dollarExchangeRate,
+                purchaseItems
+            }]
+        }
     };
 }
 
 function initPriceList(list): Item[] {
     return list.map(x => {
-        // calcurate
-        const cost = x.suppliersPrice ? x.suppliersPrice : x.price / 4;
         return x;
     });
 }
 
+export const history = (reducer: (state: AppState, action: Actions.Actions) => AppState) => (state: AppState, action: Actions.Actions) => {
+    const currentState = state ? Object.assign({}, state, {
+        dollarExchangeRate: state.appHistory.history[state.appHistory.current].dollarExchangeRate,
+        purchaseItems: state.appHistory.history[state.appHistory.current].purchaseItems
+    }) : state;
+
+    const newState = reducer(currentState, action);
+
+    switch (action.type) {
+        case 'ADD_ITEM':
+        case 'DELETE_ITEM':
+        case 'MOD_QUANTITY':
+            const h = newState.appHistory.history.slice(0, newState.appHistory.current + 1);
+
+            return Object.assign({}, newState, {
+                appHistory: {
+                    current: newState.appHistory.current + 1,
+                    history: h.concat({
+                        dollarExchangeRate: newState.dollarExchangeRate,
+                        purchaseItems: newState.purchaseItems
+                    })
+                }
+            });
+
+        case 'UNDO':
+            if (newState.appHistory.current > 0) {
+                return Object.assign({}, newState, {
+                    appHistory: {
+                        current: newState.appHistory.current - 1,
+                        history: newState.appHistory.history
+                    }
+                });
+            }
+            return newState;
+
+        case 'REDO':
+            if (newState.appHistory.current < newState.appHistory.history.length - 1) {
+                return Object.assign({}, newState, {
+                    appHistory: {
+                        current: newState.appHistory.current + 1,
+                        history: newState.appHistory.history
+                    }
+                });
+            }
+            return newState;
+    }
+
+    return newState;
+}
+
 export const appStateReducer = (state: AppState = init(), action: Actions.Actions) => {
     switch (action.type) {
-
         case 'SEARCH_ITEM':
             return Object.assign({}, state, {
                 searchWord: action.payload.searchWord
@@ -97,19 +166,20 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             return Object.assign({}, state, {
                 purchaseItems: state.purchaseItems.map(x => {
                     if (x.id === action.payload.id) {
-                        x.quantity = action.payload.quantity
+                        return Object.assign({}, x, {
+                            quantity: action.payload.quantity
+                        });
                     }
                     return x;
                 })
             });
-        // default: const _exhaustiveCheck: never = action;
     }
 
     return state;
 };
 
 export default combineReducers({
-    app: appStateReducer
+    app: history(appStateReducer),
 });
 
 

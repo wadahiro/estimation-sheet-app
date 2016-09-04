@@ -2,7 +2,8 @@ import { createSelector } from 'reselect';
 import { RootState, Item, PurchaseItem } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.priceList;
-const getPurchaseItems = (state: RootState) => state.app.purchaseItems;
+const getPurchaseItems = (state: RootState) => state.app.appHistory.history[state.app.appHistory.current].purchaseItems;
+const getDollarExchangeRate = (state: RootState) => state.app.appHistory.history[state.app.appHistory.current].dollarExchangeRate;
 
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
     getPriceList, getPurchaseItems,

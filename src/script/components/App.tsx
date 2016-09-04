@@ -50,6 +50,26 @@ class App extends React.Component<Props, void> {
         save(this.props.rootState, `${document.title}-${now.format('YYYY-MM-DD_HH_mm_ss')}`);
     };
 
+    undoOrRedo = (e) => {
+        const evtobj = window.event ? event : e;
+        if (evtobj.keyCode === 89 && evtobj.ctrlKey) {
+            evtobj.preventDefault();
+            this.props.dispatch(Actions.redo());
+
+        } else if (evtobj.keyCode === 90 && evtobj.ctrlKey) {
+            evtobj.preventDefault();
+            this.props.dispatch(Actions.undo());
+        }
+    };
+
+    componentDidMount() {
+        document.onkeydown = this.undoOrRedo;
+    }
+
+    componentWillUnmount() {
+        document.onkeydown = undefined;
+    }
+
     render() {
         const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems } = this.props;
 
