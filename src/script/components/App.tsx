@@ -40,8 +40,8 @@ class App extends React.Component<Props, void> {
     };
 
     editableQuantity = (value, item: PurchaseDetailItem) => {
-        return <div style={{ marginLeft: 10 }}>
-            <M.Textfield label='個数' value={value} type='number' onChange={this.modifyQuantity(item)} />
+        return <div className='quantity' style={{ marginLeft: 10 }}>
+            <M.Textfield label='' value={value} type='number' onChange={this.modifyQuantity(item)} />
         </div>;
     };
 

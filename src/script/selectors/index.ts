@@ -39,9 +39,12 @@ export interface PurchaseDetailItem extends PurchaseItem, Item {
 export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailItem[], Item[], PurchaseItem[]>(
     getPriceList, getPurchaseItems,
     (priceList, purchaseItems) => {
-        return purchaseItems.map(x => {
+        return purchaseItems.map((x, index) => {
             const item = priceList.find(y => y.id === x.id);
-            return <PurchaseDetailItem>Object.assign({}, item, x);
+
+            return <PurchaseDetailItem>Object.assign({
+                displayId: index + 1
+            }, item, x);
         });
     }
 )

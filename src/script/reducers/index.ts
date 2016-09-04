@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 
 import * as Actions from '../actions';
 
-const priceList = require('../data/price-list.csv');
+const PRICE_LIST = require('../data/price-list.csv');
 
 export interface RootState {
     app: AppState;
@@ -26,23 +26,31 @@ export interface Item {
     price: number;
     suppliersPrice: number;
     seller: string;
+
+    cost: number;
 }
 
 export interface PurchaseItem {
     id: string;
-    displayId: number;
     quantity: number;
-    cost: number;
 }
 
 function init(): AppState {
     return {
+        selected: null,
         showDetail: process.env.SELLER === 'default',
-        priceList: priceList.map(x => { x.added = false; return x; }),
-        selected: '',
+        priceList: initPriceList(PRICE_LIST),
         dollarExchangeRate: 120,
         purchaseItems: window['RESTORE_PURCHASE_ITEMS'] ? window['RESTORE_PURCHASE_ITEMS'] : []
     };
+}
+
+function initPriceList(list): Item[] {
+    return list.map(x => {
+        // calcurate
+        const cost = x.suppliersPrice ? x.suppliersPrice : x.price / 4;
+        return x;
+    });
 }
 
 export const appStateReducer = (state: AppState = init(), action: Actions.Actions) => {
@@ -56,13 +64,12 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
         case 'ADD_ITEM':
             const item = state.priceList.find(x => x.id === action.payload.id);
             if (item) {
-                const cost = item.suppliersPrice ? item.suppliersPrice : item.price / 4;
                 return Object.assign({}, state, {
                     selected: null,
-                    purchaseItems: state.purchaseItems.concat(Object.assign({}, item, {
-                        displayId: state.purchaseItems.length + 1,
-                        cost
-                    }))
+                    purchaseItems: state.purchaseItems.concat({
+                        id: item.id,
+                        quantity: 1
+                    })
                 });
             }
             return state;
