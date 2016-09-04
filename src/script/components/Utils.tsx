@@ -1,17 +1,11 @@
 import { RootState } from '../reducers';
 
-export function toYen(price: number) {
-    if (!price) {
-        price = 0;
-    }
+export function toYen(price: number = 0) {
     return `${String(price).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')} 円`;
 }
 
 export function toPercentage(rate: number) {
-    if (!rate) {
-        return '0 %';
-    }
-    return `${Math.floor(rate / 100)} %`;
+    return `${Math.floor(rate * 100)} %`;
 }
 
 export function format(type: 'yen' | 'rate') {

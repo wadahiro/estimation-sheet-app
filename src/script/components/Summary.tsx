@@ -3,7 +3,7 @@ import * as M from 'react-mdl';
 
 import { PurchaseDetailItem } from '../selectors';
 import { RootState, Column } from '../reducers';
-import { toYen, toPercentage } from './Utils';
+import { format } from './Utils';
 
 interface Props {
     columns: Column[];
@@ -15,8 +15,8 @@ export class Summary extends React.Component<Props, void> {
         const { columns, purchaseDetailItems } = this.props;
 
         // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += (x.cost * (x.quantity || 0)); return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity || 0)); return s; }, 0);
+        const cost = purchaseDetailItems.reduce((s, x) => { s += (calcCost(x) * (x.quantity)); return s; }, 0);
+        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity)); return s; }, 0);
         const sum = {
             cost,
             receipt,
@@ -41,11 +41,10 @@ export class Summary extends React.Component<Props, void> {
     }
 }
 
-function format(type: 'yen' | 'rate') {
-    switch (type) {
-        case 'yen':
-            return toYen;
-        case 'rate':
-            return toPercentage;
+function calcCost(item: PurchaseDetailItem) {
+    if (item.suppliersPrice === 0) {
+        return item.price / 4;
+    } else {
+        return item.suppliersPrice;
     }
 }
