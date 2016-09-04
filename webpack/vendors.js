@@ -4,6 +4,7 @@ require('react-redux');
 require('redux');
 
 // add other libraries here as well
+require('moment');
 require('reselect');
 require('react-mdl');
 require('react-input-enhancements');

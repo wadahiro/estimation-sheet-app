@@ -9,11 +9,19 @@ export interface RootState {
 }
 
 export interface AppState {
-    showDetail: boolean;
+    summaryColumns: Column[];
+    purchaseItemsColumns: Column[];
+
     priceList: Item[];
-    selected: string;
+    searchWord: string;
     dollarExchangeRate: number;
     purchaseItems: PurchaseItem[];
+}
+
+export interface Column {
+    name: string;
+    label: string;
+    type: 'yen' | 'rate';
 }
 
 export interface Item {
@@ -37,8 +45,10 @@ export interface PurchaseItem {
 
 function init(): AppState {
     return {
-        selected: null,
-        showDetail: process.env.SELLER === 'default',
+        summaryColumns: process.env.SUMMARY_COLUMNS,
+        purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
+
+        searchWord: null,
         priceList: initPriceList(PRICE_LIST),
         dollarExchangeRate: 120,
         purchaseItems: window['RESTORE_PURCHASE_ITEMS'] ? window['RESTORE_PURCHASE_ITEMS'] : []
@@ -56,16 +66,16 @@ function initPriceList(list): Item[] {
 export const appStateReducer = (state: AppState = init(), action: Actions.Actions) => {
     switch (action.type) {
 
-        case 'SET_ITEM':
+        case 'SEARCH_ITEM':
             return Object.assign({}, state, {
-                selected: action.payload.id
+                searchWord: action.payload.searchWord
             });
 
         case 'ADD_ITEM':
             const item = state.priceList.find(x => x.id === action.payload.id);
             if (item) {
                 return Object.assign({}, state, {
-                    selected: null,
+                    searchWord: null,
                     purchaseItems: state.purchaseItems.concat({
                         id: item.id,
                         quantity: 1

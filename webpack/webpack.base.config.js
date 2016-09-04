@@ -10,6 +10,31 @@ NODE_ENV = NODE_ENV && NODE_ENV.trim() === 'production' ? 'production' : 'develo
 
 var SELLER = process.env.SELLER;
 SELLER = SELLER ? SELLER.trim() : 'default';
+var SUMMARY_COLUMNS = SELLER === 'default' ?
+  [
+    { name: 'cost', 'label': '仕入額(コスト)', type: 'yen' },
+    { name: 'receipt', 'label': '仕切額(売上)*税抜', type: 'yen' },
+    { name: 'profitRate', 'label': '利益率', type: 'rate' }
+  ]
+  :
+  [
+    { name: 'receipt', 'label': '仕切額(売上)*税抜', type: 'yen' }
+  ];
+var PURCHASE_ITEMS_COLUMNS = SELLER === 'default' ?
+  [
+    { name: 'itemId', 'label': '商品番号' },
+    { name: 'name', 'label': '商品名' },
+    { name: 'menu', 'label': 'メニュー' },
+    { name: 'unit', 'label': '単位' },
+    { name: 'suppliersPrice', 'label': '仕入れ単価', type: 'yen' }
+  ]
+  :
+  [
+    { name: 'itemId', 'label': '商品番号' },
+    { name: 'name', 'label': '商品名' },
+    { name: 'menu', 'label': 'メニュー' },
+    { name: 'unit', 'label': '単位' }
+  ];
 
 module.exports = {
   target: 'web',
@@ -63,7 +88,9 @@ module.exports = {
     }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"' + NODE_ENV + '"',
-      'process.env.SELLER': '"' + SELLER + '"'
+      'process.env.SELLER': '"' + SELLER + '"',
+      'process.env.SUMMARY_COLUMNS': JSON.stringify(SUMMARY_COLUMNS),
+      'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(PURCHASE_ITEMS_COLUMNS)
     }),
     new HtmlWebpackPlugin({
       inject: NODE_ENV === 'production' ? false : true,

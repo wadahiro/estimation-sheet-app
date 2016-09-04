@@ -1,23 +1,23 @@
 import { Action } from 'redux';
 
 export type Actions =
-    SetItem |
+    SearchItem |
     AddItem |
     DeleteItem |
     ModifyQuantity
     ;
 
-export interface SetItem extends Action {
-    type: 'SET_ITEM';
+export interface SearchItem extends Action {
+    type: 'SEARCH_ITEM';
     payload: {
-        id: string;
+        searchWord: string;
     }
 }
-export function setItem(id: string): SetItem {
+export function searchItem(searchWord: string): SearchItem {
     return {
-        type: 'SET_ITEM',
+        type: 'SEARCH_ITEM',
         payload: {
-            id
+            searchWord
         }
     };
 }
