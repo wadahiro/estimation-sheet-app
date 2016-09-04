@@ -73,6 +73,13 @@ module.exports = {
       hash: false
     }),
     new AddAssetHtmlPlugin({
+      filename: require.resolve('../node_modules/react-mdl/extra/material.js'),
+      publicPath: 'assets',
+      outputPath: 'assets',
+      hash: false,
+      includeSourcemap: false
+    }),
+    new AddAssetHtmlPlugin({
       filename: require.resolve('../.dll/vendor.js'),
       publicPath: 'assets',
       outputPath: 'assets',
@@ -87,13 +94,6 @@ module.exports = {
     //   includeSourcemap: false,
     //   typeOfAsset: 'css'
     // }),
-    new AddAssetHtmlPlugin({
-      filename: require.resolve('../node_modules/react-mdl/extra/material.js'),
-      publicPath: 'assets',
-      outputPath: 'assets',
-      hash: false,
-      includeSourcemap: false
-    })
     // I'm waiting the issue is resolved...
     // https://github.com/amireh/happypack/issues/33
     // new HappyPack({
