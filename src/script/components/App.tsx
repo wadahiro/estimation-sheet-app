@@ -6,13 +6,12 @@ import { createSelector } from 'reselect';
 
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem } from '../selectors';
-import { RootState, Column, Item, PurchaseItem } from '../reducers';
+import { RootState, Column, Item, PurchaseItem, SavedHistory } from '../reducers';
 import { SearchBox } from './SearchBox';
 import { Summary } from './Summary';
 import { PurchaseItems } from './PurchaseItems';
+import { HistoryMenu } from './HistoryMenu';
 import { save } from './Utils';
-
-const moment = require('moment');
 
 interface Props {
     dispatch?: Dispatch<RootState>;
@@ -25,6 +24,8 @@ interface Props {
     dollarExchangeRate?: number;
     purchaseItems?: PurchaseItem[];
     purchaseDetailItems?: PurchaseDetailItem[];
+
+    savedHistory?: SavedHistory[];
 }
 
 class App extends React.Component<Props, void> {
@@ -46,8 +47,11 @@ class App extends React.Component<Props, void> {
     };
 
     download = (e) => {
-        const now = moment();
-        save(this.props.rootState, `${document.title}-${now.format('YYYY-MM-DD_HH_mm_ss')}`);
+        save(this.props.rootState);
+    };
+
+    restoreSavedHistory = (date: string) => {
+        this.props.dispatch(Actions.restoreSavedHistory(date));
     };
 
     undoOrRedo = (e) => {
@@ -71,7 +75,7 @@ class App extends React.Component<Props, void> {
     }
 
     render() {
-        const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems } = this.props;
+        const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems, savedHistory } = this.props;
 
         return (
             <div>
@@ -81,6 +85,9 @@ class App extends React.Component<Props, void> {
                             <a href='#'>価格一覧</a>
                         </M.Navigation>
                     </M.Header>
+                    <M.Drawer title='保存履歴'>
+                        <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
+                    </M.Drawer>
                     <M.Content>
                         <div style={{ width: '90%', margin: 'auto' }}>
                             <M.Grid>
@@ -128,7 +135,9 @@ function mapStateToProps(state: RootState, props: Props): Props {
         searchWord: state.app.searchWord,
         dollarExchangeRate: state.app.dollarExchangeRate,
         purchaseItems: state.app.purchaseItems,
-        purchaseDetailItems: getPurchaseDetailItems(state)
+        purchaseDetailItems: getPurchaseDetailItems(state),
+
+        savedHistory: state.app.savedHistory
     };
 }
 

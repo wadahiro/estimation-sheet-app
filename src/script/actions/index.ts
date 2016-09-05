@@ -5,6 +5,7 @@ export type Actions =
     AddItem |
     DeleteItem |
     ModifyQuantity |
+    RestoreSavedHistory |
     Undo |
     Redo
     ;
@@ -67,6 +68,21 @@ export function modifyQuantity(id, quantity): ModifyQuantity {
         payload: {
             id,
             quantity
+        }
+    };
+}
+
+export interface RestoreSavedHistory extends Action {
+    type: 'RESTORE_SAVED_HISTORY';
+    payload: {
+        date: string;
+    }
+}
+export function restoreSavedHistory(date: string): RestoreSavedHistory {
+    return {
+        type: 'RESTORE_SAVED_HISTORY',
+        payload: {
+            date
         }
     };
 }

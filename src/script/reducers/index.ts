@@ -18,6 +18,8 @@ export interface AppState {
     purchaseItems: PurchaseItem[];
 
     appHistory: AppHistory;
+
+    savedHistory: SavedHistory[];
 }
 
 export interface Column {
@@ -53,9 +55,21 @@ export interface AppHistory {
     }[];
 }
 
+export interface SavedHistory {
+    date: string;
+    dollarExchangeRate: number;
+    purchaseItems: PurchaseItem[];
+}
+
 function init(): AppState {
-    const dollarExchangeRate = 120;
-    const purchaseItems = window['RESTORE_PURCHASE_ITEMS'] ? window['RESTORE_PURCHASE_ITEMS'] : [];
+    let dollarExchangeRate = 120;
+    let purchaseItems = [];
+
+    const savedHistory: SavedHistory[] = window['SAVED_HISTORY'] ? window['SAVED_HISTORY'] : [];
+    if (savedHistory.length > 0) {
+        dollarExchangeRate = savedHistory[savedHistory.length - 1].dollarExchangeRate;
+        purchaseItems = savedHistory[savedHistory.length - 1].purchaseItems;
+    }
 
     return {
         summaryColumns: process.env.SUMMARY_COLUMNS,
@@ -73,7 +87,9 @@ function init(): AppState {
                 dollarExchangeRate,
                 purchaseItems
             }]
-        }
+        },
+
+        savedHistory: savedHistory
     };
 }
 
@@ -95,6 +111,7 @@ export const history = (reducer: (state: AppState, action: Actions.Actions) => A
         case 'ADD_ITEM':
         case 'DELETE_ITEM':
         case 'MOD_QUANTITY':
+        case 'RESTORE_SAVED_HISTORY':
             const h = newState.appHistory.history.slice(0, newState.appHistory.current + 1);
 
             return Object.assign({}, newState, {
@@ -172,6 +189,12 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                     }
                     return x;
                 })
+            });
+
+        case 'RESTORE_SAVED_HISTORY':
+            return Object.assign({}, state, {
+                dollarExchangeRate: state.savedHistory.find(x => x.date === action.payload.date).dollarExchangeRate,
+                purchaseItems: state.savedHistory.find(x => x.date === action.payload.date).purchaseItems
             });
     }
 
