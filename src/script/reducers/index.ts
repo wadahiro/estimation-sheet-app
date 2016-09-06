@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 
 import * as Actions from '../actions';
+import { now } from '../components/Utils';
 
-const moment = require('moment');
 const PRICE_LIST = require('../data/price-list.csv');
 
 export interface RootState {
@@ -15,11 +15,10 @@ export interface AppState {
 
     priceList: Item[];
     searchWord: string;
-    dollarExchangeRate: number;
-    purchaseItems: PurchaseItem[];
 
+    // user editable data
+    current: Data;
     appHistory: AppHistory;
-
     savedHistory: SavedHistory;
 }
 
@@ -50,18 +49,19 @@ export interface PurchaseItem {
 
 export interface AppHistory {
     current: number;
-    history: History[];
+    history: Data[];
 }
 
 export interface SavedHistory {
-    current: number;
-    history: History[];
+    history: Data[];
 }
 
-export interface History {
+export interface Data {
     date: string;
     dollarExchangeRate: number;
     purchaseItems: PurchaseItem[];
+
+    currentSavedHistory: number;
 }
 
 // for test server
@@ -73,15 +73,19 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 function init(): AppState {
-    let date = moment().format('YYYY-MM-DD HH:mm:ss');
-    let dollarExchangeRate = 120;
-    let purchaseItems = [];
+    let data: Data = {
+        date: '',
+        dollarExchangeRate: 120,
+        purchaseItems: [],
+        currentSavedHistory: 0
+    };
 
-    const savedHistory: History[] = window['SAVED_HISTORY'] ? window['SAVED_HISTORY'] : [];
+    const savedHistory: Data[] = (window['SAVED_HISTORY'] ? window['SAVED_HISTORY'] : []).map((x, index) => {
+        x.currentSavedHistory = index;
+        return x;
+    });
     if (savedHistory.length > 0) {
-        date = savedHistory[savedHistory.length - 1].date;
-        dollarExchangeRate = savedHistory[savedHistory.length - 1].dollarExchangeRate;
-        purchaseItems = savedHistory[savedHistory.length - 1].purchaseItems;
+        data = savedHistory[savedHistory.length - 1];
     }
 
     return {
@@ -91,20 +95,14 @@ function init(): AppState {
         searchWord: null,
         priceList: initPriceList(PRICE_LIST),
 
-        dollarExchangeRate,
-        purchaseItems,
+        current: data,
 
         appHistory: {
             current: 0,
-            history: [{
-                date,
-                dollarExchangeRate,
-                purchaseItems
-            }]
+            history: [data]
         },
 
         savedHistory: {
-            current: savedHistory.length - 1,
             history: savedHistory
         }
     };
@@ -118,8 +116,7 @@ function initPriceList(list): Item[] {
 
 export const history = (reducer: (state: AppState, action: Actions.Actions) => AppState) => (state: AppState, action: Actions.Actions) => {
     const currentState = state ? Object.assign({}, state, {
-        dollarExchangeRate: state.appHistory.history[state.appHistory.current].dollarExchangeRate,
-        purchaseItems: state.appHistory.history[state.appHistory.current].purchaseItems
+        current: state.appHistory.history[state.appHistory.current]
     }) : state;
 
     const newState = reducer(currentState, action);
@@ -134,11 +131,7 @@ export const history = (reducer: (state: AppState, action: Actions.Actions) => A
             return Object.assign({}, newState, {
                 appHistory: {
                     current: newState.appHistory.current + 1,
-                    history: h.concat({
-                        date: moment().format('YYYY-MM-DD HH:mm:ss'),
-                        dollarExchangeRate: newState.dollarExchangeRate,
-                        purchaseItems: newState.purchaseItems
-                    })
+                    history: h.concat(newState.current)
                 }
             });
 
@@ -180,45 +173,49 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             if (item) {
                 return Object.assign({}, state, {
                     searchWord: null,
-                    purchaseItems: state.purchaseItems.concat({
-                        id: item.id,
-                        quantity: 1
+                    current: Object.assign({}, state.current, {
+                        date: now(),
+                        purchaseItems: state.current.purchaseItems.concat({
+                            id: item.id,
+                            quantity: 1
+                        })
                     })
                 });
             }
             return state;
 
         case 'DELETE_ITEM':
-            const deleteItem = state.purchaseItems.find(x => x.id === action.payload.id);
+            const deleteItem = state.current.purchaseItems.find(x => x.id === action.payload.id);
             if (deleteItem) {
                 return Object.assign({}, state, {
-                    purchaseItems: state.purchaseItems.filter(x => x.id !== deleteItem.id)
+                    current: Object.assign({}, state.current, {
+                        date: now(),
+                        purchaseItems: state.current.purchaseItems.filter(x => x.id !== deleteItem.id)
+                    })
                 });
             }
             return state;
 
         case 'MOD_QUANTITY':
             return Object.assign({}, state, {
-                purchaseItems: state.purchaseItems.map(x => {
-                    if (x.id === action.payload.id) {
-                        return Object.assign({}, x, {
-                            quantity: action.payload.quantity
-                        });
-                    }
-                    return x;
+                current: Object.assign({}, state.current, {
+                    date: now(),
+                    purchaseItems: state.current.purchaseItems.map(x => {
+                        if (x.id === action.payload.id) {
+                            return Object.assign({}, x, {
+                                quantity: action.payload.quantity
+                            });
+                        }
+                        return x;
+                    })
                 })
             });
 
         case 'RESTORE_SAVED_HISTORY':
-            const restoreIndex = state.savedHistory.history.findIndex(x => x.date === action.payload.date);
+            const restoredIndex = state.savedHistory.history.findIndex(x => x.date === action.payload.date);
 
             return Object.assign({}, state, {
-                dollarExchangeRate: state.savedHistory.history[restoreIndex].dollarExchangeRate,
-                purchaseItems: state.savedHistory.history[restoreIndex].purchaseItems,
-
-                savedHistory: Object.assign({}, state.savedHistory, {
-                    current: restoreIndex
-                })
+                current: state.savedHistory.history[restoredIndex]
             });
     }
 

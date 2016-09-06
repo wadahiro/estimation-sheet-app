@@ -5,8 +5,8 @@ import * as M from 'react-mdl';
 import { createSelector } from 'reselect';
 
 import * as Actions from '../actions';
-import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, SavedHistory } from '../reducers';
+import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem, isEditing } from '../selectors';
+import { RootState, Column, Item, PurchaseItem, SavedHistory, Data } from '../reducers';
 import { SearchBox } from './SearchBox';
 import { Summary } from './Summary';
 import { PurchaseItems } from './PurchaseItems';
@@ -25,7 +25,9 @@ interface Props {
     purchaseItems?: PurchaseItem[];
     purchaseDetailItems?: PurchaseDetailItem[];
 
+    currentSavedHistory?: Data,
     savedHistory?: SavedHistory;
+    editing?: boolean;
 }
 
 class App extends React.Component<Props, void> {
@@ -80,13 +82,12 @@ class App extends React.Component<Props, void> {
     }
 
     render() {
-        const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems, savedHistory } = this.props;
-        const current = savedHistory.history[savedHistory.current];
+        const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems, currentSavedHistory, savedHistory, editing } = this.props;
 
         return (
             <div>
                 <M.Layout fixedHeader>
-                    <M.Header title={`概算見積もり ${current.date}`}>
+                    <M.Header title={`概算見積もり (${editing ? '編集中...' : currentSavedHistory.date})`}>
                         <M.Navigation>
                             <a href='#'>価格一覧</a>
                         </M.Navigation>
@@ -139,11 +140,13 @@ function mapStateToProps(state: RootState, props: Props): Props {
         purchaseItemsColumns: state.app.purchaseItemsColumns,
         priceList: getVisibleOptions(state),
         searchWord: state.app.searchWord,
-        dollarExchangeRate: state.app.dollarExchangeRate,
-        purchaseItems: state.app.purchaseItems,
+        dollarExchangeRate: state.app.current.dollarExchangeRate,
+        purchaseItems: state.app.current.purchaseItems,
         purchaseDetailItems: getPurchaseDetailItems(state),
 
-        savedHistory: state.app.savedHistory
+        currentSavedHistory: state.app.savedHistory.history[state.app.current.currentSavedHistory],
+        savedHistory: state.app.savedHistory,
+        editing: isEditing(state)
     };
 }
 

@@ -1,9 +1,12 @@
 import { createSelector } from 'reselect';
-import { RootState, Item, PurchaseItem } from '../reducers';
+import { RootState, AppHistory, SavedHistory, Item, PurchaseItem } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.priceList;
 const getPurchaseItems = (state: RootState) => state.app.appHistory.history[state.app.appHistory.current].purchaseItems;
 const getDollarExchangeRate = (state: RootState) => state.app.appHistory.history[state.app.appHistory.current].dollarExchangeRate;
+const getAppHistory = (state: RootState) => state.app.appHistory;
+const getSavedHistory = (state: RootState) => state.app.savedHistory;
+const getCurrent = (state: RootState) => state.app.current;
 
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
     getPriceList, getPurchaseItems,
@@ -47,5 +50,14 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
                 displayId: index + 1
             }, item, x);
         });
+    }
+)
+
+export const isEditing = createSelector<RootState, boolean, AppHistory, SavedHistory>(
+    getAppHistory, getSavedHistory,
+    (appHistory, savedHistory) => {
+        const currentApp = appHistory.history[appHistory.current];
+        const currentSaved = savedHistory.history[currentApp.currentSavedHistory];
+        return currentApp !== currentSaved;
     }
 )

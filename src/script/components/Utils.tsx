@@ -23,11 +23,9 @@ export function save(rootState: RootState) {
     const now = moment();
     const title = `${document.title}-${now.format('YYYY-MM-DD_HH_mm_ss')}`;
 
-    const savedHistory = rootState.app.savedHistory.history.concat({
-        date: now.format('YYYY-MM-DD HH:mm:ss'),
-        dollarExchangeRate: rootState.app.dollarExchangeRate,
-        purchaseItems: rootState.app.purchaseItems
-    });
+    const savedHistory = rootState.app.savedHistory.history.concat(Object.assign({}, rootState.app.current, {
+        date: now.format('YYYY-MM-DD HH:mm:ss')
+    }));
 
     const current = document.getElementsByTagName('html')[0].innerHTML;
 
@@ -61,4 +59,8 @@ export function save(rootState: RootState) {
         ev.initMouseEvent('click', true, false, self, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         a.dispatchEvent(ev);
     }
+}
+
+export function now(): string {
+    return moment().format('YYYY-MM-DD HH:mm:ss');
 }
