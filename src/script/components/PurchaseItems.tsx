@@ -16,12 +16,20 @@ export class PurchaseItems extends React.Component<Props, void> {
 
     editableQuantity = (value, item: PurchaseDetailItem) => {
         return <div className='quantity' style={{ marginLeft: 10 }}>
-            <M.Textfield label='' value={value} type='number' onChange={this.modifyQuantity(item)} />
+            <M.Textfield label='' value={value} onChange={this.modifyQuantity(item)} />
         </div>;
     };
 
     modifyQuantity = (item: PurchaseDetailItem) => (e) => {
-        const quantity = Number(e.target.value);
+        const value = e.target.value.replace(/[０-９]/g, str => {
+            return String.fromCharCode(str.charCodeAt(0) - 0xFEE0);
+        });
+
+        const quantity = Number(value);
+        if (isNaN(quantity) || e.target.value === '') {
+            return;
+        }
+
         this.props.onChangeQuantity(item.id, quantity);
     };
 
