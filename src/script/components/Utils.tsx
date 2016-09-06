@@ -23,7 +23,7 @@ export function save(rootState: RootState) {
     const now = moment();
     const title = `${document.title}-${now.format('YYYY-MM-DD_HH_mm_ss')}`;
 
-    const savedHistory = rootState.app.savedHistory.concat({
+    const savedHistory = rootState.app.savedHistory.history.concat({
         date: now.format('YYYY-MM-DD HH:mm:ss'),
         dollarExchangeRate: rootState.app.dollarExchangeRate,
         purchaseItems: rootState.app.purchaseItems

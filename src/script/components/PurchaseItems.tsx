@@ -26,7 +26,7 @@ export class PurchaseItems extends React.Component<Props, void> {
     };
 
     renderAction = (value, item: PurchaseDetailItem) => {
-        return <M.Button raised accent ripple onClick={this.deleteItem(item.id)}>削除</M.Button>;
+        return <M.IconButton name='delete' onClick={this.deleteItem(item.id)} />;
     };
 
     deleteItem = (id: string) => (e) => {

@@ -25,7 +25,7 @@ interface Props {
     purchaseItems?: PurchaseItem[];
     purchaseDetailItems?: PurchaseDetailItem[];
 
-    savedHistory?: SavedHistory[];
+    savedHistory?: SavedHistory;
 }
 
 class App extends React.Component<Props, void> {
@@ -47,6 +47,7 @@ class App extends React.Component<Props, void> {
     };
 
     download = (e) => {
+        e.preventDefault();
         save(this.props.rootState);
     };
 
@@ -54,7 +55,7 @@ class App extends React.Component<Props, void> {
         this.props.dispatch(Actions.restoreSavedHistory(date));
     };
 
-    undoOrRedo = (e) => {
+    handleKeydown = (e) => {
         const evtobj = window.event ? event : e;
         if (evtobj.keyCode === 89 && evtobj.ctrlKey) {
             evtobj.preventDefault();
@@ -63,11 +64,15 @@ class App extends React.Component<Props, void> {
         } else if (evtobj.keyCode === 90 && evtobj.ctrlKey) {
             evtobj.preventDefault();
             this.props.dispatch(Actions.undo());
+
+        } else if (evtobj.keyCode === 83 && evtobj.ctrlKey) {
+            evtobj.preventDefault();
+            this.download(e);
         }
     };
 
     componentDidMount() {
-        document.onkeydown = this.undoOrRedo;
+        document.onkeydown = this.handleKeydown;
     }
 
     componentWillUnmount() {
@@ -76,17 +81,18 @@ class App extends React.Component<Props, void> {
 
     render() {
         const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems, savedHistory } = this.props;
+        const current = savedHistory.history[savedHistory.current];
 
         return (
             <div>
                 <M.Layout fixedHeader>
-                    <M.Header title={'概算見積もり'}>
+                    <M.Header title={`概算見積もり ${current.date}`}>
                         <M.Navigation>
                             <a href='#'>価格一覧</a>
                         </M.Navigation>
                     </M.Header>
                     <M.Drawer title='保存履歴'>
-                        <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
+                        <HistoryMenu history={savedHistory.history} goto={this.restoreSavedHistory} />
                     </M.Drawer>
                     <M.Content>
                         <div style={{ width: '90%', margin: 'auto' }}>
