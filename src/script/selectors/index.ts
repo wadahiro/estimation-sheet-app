@@ -4,8 +4,6 @@ import { RootState, AppState, SavedHistory, Item, PurchaseItem, UserData } from 
 const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
 const getDollarExchangeRate = (state: RootState) => state.app.present.userData.dollarExchangeRate;
-const getAppHistory = (state: RootState) => state.app.past;
-const getSavedHistory = (state: RootState) => state.app.present.savedHistory;
 const getPresentAppState = (state: RootState) => state.app.present;
 
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
