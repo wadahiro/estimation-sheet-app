@@ -166,6 +166,6 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
 export default combineReducers({
     app: undoable(appStateReducer, {
-        filter: includeAction(['SOME_ACTION', 'DELETE_ITEM', 'MOD_QUANTITY', 'RESTORE_SAVED_HISTORY'])
+        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'RESTORE_SAVED_HISTORY'])
     }),
 });
