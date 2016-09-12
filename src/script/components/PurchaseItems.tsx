@@ -42,7 +42,7 @@ export class PurchaseItems extends React.Component<Props, void> {
     renderQuantity = (item: PurchaseDetailItem) => {
         return (
             <div className='quantity' style={{ marginLeft: 10 }}>
-                <TextField hintText='個数/ユーザー数' value={item.quantity} onChange={this.modifyQuantity(item)} />
+                <TextField fullWidth value={item.quantity} onChange={this.modifyQuantity(item)} />
             </div>
         );
     };
@@ -100,7 +100,7 @@ export class PurchaseItems extends React.Component<Props, void> {
                     <TableBody displayRowCheckbox={false}>
                         {purchaseDetailItems.map(x => {
                             return (
-                                <TableRow key={x.id}>
+                                <TableRow key={x.id} selectable={false}>
                                     <TableRowColumn style={idColStyle}>{x.id}</TableRowColumn>
                                     {columns.map(y => {
                                         const value = format(y.type, x[y.name]);

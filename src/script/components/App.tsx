@@ -88,6 +88,9 @@ class App extends React.Component<Props, State> {
 
     restoreSavedHistory = (date: string) => {
         this.props.dispatch(Actions.restoreSavedHistory(date));
+        this.setState({
+            showDrawer: false
+        });
     };
 
     changeMetadata = (name: string, value: string) => {
@@ -147,9 +150,11 @@ class App extends React.Component<Props, State> {
 
         return (
             <div>
-                <AppBar title={this.getTitle()} iconClassNameRight='muidocs-icon-save' onLeftIconButtonTouchTap={this.openDrawer}>
+                <AppBar title={this.getTitle()} iconClassNameRight='muidocs-icon-navigation-expand-more' onLeftIconButtonTouchTap={this.openDrawer}>
                 </AppBar>
-                <Drawer open={this.state.showDrawer}>
+                <Drawer open={this.state.showDrawer}
+                    docked={false}
+                    onRequestChange={(showDrawer) => this.setState({ showDrawer })}>
                     <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
                 </Drawer>
                 <div style={{ width: '90%', margin: 'auto' }}>

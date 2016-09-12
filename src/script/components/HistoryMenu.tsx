@@ -1,6 +1,8 @@
 import * as React from 'react';
 
 import MenuItem from 'material-ui/MenuItem';
+import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card';
+import FlatButton from 'material-ui/FlatButton';
 
 import { Option } from '../reducers';
 
@@ -21,10 +23,6 @@ export class HistoryMenu extends React.Component<Props, void> {
     handleClick = (date: string) => (e) => {
         e.preventDefault();
         this.props.goto(date);
-
-        // https://github.com/google/material-design-lite/issues/1246
-        const d = document.querySelector('.mdl-layout');
-        d['MaterialLayout'].toggleDrawer();
     };
 
     render() {
@@ -33,11 +31,19 @@ export class HistoryMenu extends React.Component<Props, void> {
         return (
             <div>
                 {history.concat().reverse().map(x => {
-                    return <MenuItem>
-                        <a href='#' onClick={this.handleClick(x.date)}>{x.date}</a>
-                        <div>{x.estimationMetadata['customerName']}</div>
-                        <div>{x.estimationMetadata['title']}</div>
-                    </MenuItem>;
+                    return (
+                        <Card>
+                            <CardHeader
+                                title={<a href='#' onClick={this.handleClick(x.date)}>{x.date}</a>}
+                                subtitle={x.estimationMetadata['title']}
+                                actAsExpander={true}
+                                showExpandableButton={true}
+                                />
+                            <CardText expandable={true}>
+                                <div>{x.estimationMetadata['customerName']}</div>
+                            </CardText>
+                        </Card>
+                    );
                 })}
             </div>
         );

@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
 import { PurchaseDetailItem } from '../selectors';
@@ -25,34 +26,36 @@ export class Summary extends React.Component<Props, void> {
         }
 
         return (
-            <Table
-                style={{ width: '100%' }}
-                >
+            <Paper>
+                <Table
+                    style={{ width: '100%' }}
+                    >
 
-                <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
-                    <TableRow>
-                        {columns.map(x => {
-                            return (
-                                <TableHeaderColumn key={x.name} >
-                                    {x.label}
-                                </TableHeaderColumn>
-                            );
-                        })}
-                    </TableRow>
-                </TableHeader>
-                <TableBody displayRowCheckbox={false}>
-                    <TableRow >
-                        {columns.map(x => {
-                            const value = format(x.type, sum[x.name]);
-                            return (
-                                <TableRowColumn key={x.name} >
-                                    {value}
-                                </TableRowColumn>
-                            );
-                        })}
-                    </TableRow>
-                </TableBody>
-            </Table>
+                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                        <TableRow>
+                            {columns.map(x => {
+                                return (
+                                    <TableHeaderColumn key={x.name} >
+                                        {x.label}
+                                    </TableHeaderColumn>
+                                );
+                            })}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody displayRowCheckbox={false}>
+                        <TableRow >
+                            {columns.map(x => {
+                                const value = format(x.type, sum[x.name]);
+                                return (
+                                    <TableRowColumn key={x.name} >
+                                        {value}
+                                    </TableRowColumn>
+                                );
+                            })}
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </Paper>
         );
     }
 }
