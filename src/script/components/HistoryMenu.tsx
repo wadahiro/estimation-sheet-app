@@ -1,13 +1,16 @@
 import * as React from 'react';
 import * as M from 'react-mdl';
 
-import { Option } from '../selectors';
+import { Option } from '../reducers';
 
 const { Combobox } = require('react-input-enhancements');
 
 interface Props {
     history: {
         date: string;
+        estimationMetadata: {
+            [index: string]: string;
+        };
     }[];
     goto: (date: string) => void;
 }
@@ -29,7 +32,11 @@ export class HistoryMenu extends React.Component<Props, void> {
         return (
             <M.Navigation>
                 {history.concat().reverse().map(x => {
-                    return <a href='#' onClick={this.handleClick(x.date)}>{x.date}</a>;
+                    return <div>
+                        <a href='#' onClick={this.handleClick(x.date)}>{x.date}</a>
+                        <div>{x.estimationMetadata['customerName']}</div>
+                        <div>{x.estimationMetadata['title']}</div>
+                    </div>;
                 })}
             </M.Navigation>
         );

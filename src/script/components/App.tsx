@@ -5,32 +5,42 @@ import * as M from 'react-mdl';
 import { createSelector } from 'reselect';
 
 import * as Actions from '../actions';
-import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData } from '../reducers';
+import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
+import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData, Option } from '../reducers';
 import { SearchBox } from './SearchBox';
 import { Summary } from './Summary';
 import { PurchaseItems } from './PurchaseItems';
 import { HistoryMenu } from './HistoryMenu';
+import { SaveDialog } from './SaveDialog';
 import { save } from './Utils';
 
 interface Props {
     dispatch?: Dispatch<RootState>;
     rootState?: RootState;
 
+    estimationMetadataColumns?: Column[];
     summaryColumns?: Column[];
     purchaseItemsColumns?: Column[];
     priceList?: Option[];
+
     searchWord?: string;
-    dollarExchangeRate?: number;
-    purchaseItems?: PurchaseItem[];
     purchaseDetailItems?: PurchaseDetailItem[];
+
+    userData?: UserData,
 
     currentSavedHistory?: UserData,
     savedHistory?: UserData[];
     editing?: boolean;
 }
 
-class App extends React.Component<Props, void> {
+interface State {
+    showSaveDialog: boolean;
+}
+
+class App extends React.Component<Props, State> {
+    state = {
+        showSaveDialog: false
+    }
 
     addItem = (id: string) => {
         this.props.dispatch(Actions.addItem(id));
@@ -48,13 +58,29 @@ class App extends React.Component<Props, void> {
         this.props.dispatch(Actions.deleteItem(id));
     };
 
-    download = (e) => {
+    openSaveDialog = (e) => {
         e.preventDefault();
+        this.setState({
+            showSaveDialog: true
+        });
+    };
+
+    closeSaveDialog = () => {
+        this.setState({
+            showSaveDialog: false
+        });
+    };
+
+    save = () => {
         save(this.props.rootState);
     };
 
     restoreSavedHistory = (date: string) => {
         this.props.dispatch(Actions.restoreSavedHistory(date));
+    };
+
+    changeMetadata = (name: string, value: string) => {
+        this.props.dispatch(Actions.modifyMetadata(name, value));
     };
 
     handleKeydown = (e) => {
@@ -69,7 +95,12 @@ class App extends React.Component<Props, void> {
 
         } else if (evtobj.keyCode === 83 && evtobj.ctrlKey) {
             evtobj.preventDefault();
-            this.download(e);
+            if (this.state.showSaveDialog) {
+                this.closeSaveDialog();
+                this.save();
+            } else {
+                this.openSaveDialog(e);
+            }
         }
     };
 
@@ -81,13 +112,32 @@ class App extends React.Component<Props, void> {
         document.onkeydown = undefined;
     }
 
+    getTitle() {
+        const customerName = this.props.userData.estimationMetadata['customerName'];
+        const title = this.props.userData.estimationMetadata['title'];
+        const displayTitle = title ? title : '';
+        const displayCustomerName = customerName ? customerName : '';
+
+        const display = (displayTitle || customerName) ? `- ${displayCustomerName} : ${displayTitle}` : '';
+
+        if (this.props.editing) {
+            return `概算見積もり ${display} (編集中...)`;
+        } else {
+            return `概算見積もり ${display} (${this.props.currentSavedHistory.date})`;
+        }
+    }
+
     render() {
-        const { summaryColumns, purchaseItemsColumns, priceList, searchWord, purchaseDetailItems, currentSavedHistory, savedHistory, editing } = this.props;
+        const { estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
+            priceList,
+            userData,
+            searchWord, purchaseDetailItems, currentSavedHistory, savedHistory,
+            editing } = this.props;
 
         return (
             <div>
                 <M.Layout fixedHeader>
-                    <M.Header title={`概算見積もり (${editing ? '編集中...' : currentSavedHistory.date})`}>
+                    <M.Header title={this.getTitle()}>
                         <M.Navigation>
                             <a href='#'>価格一覧</a>
                         </M.Navigation>
@@ -121,12 +171,15 @@ class App extends React.Component<Props, void> {
                                 <M.Cell col={10}>
                                 </M.Cell>
                                 <M.Cell col={2}>
-                                    <M.Button raised colored ripple onClick={this.download}>ファイルに保存</M.Button>
+                                    <M.Button raised colored ripple onClick={this.openSaveDialog}>ファイルに保存</M.Button>
                                 </M.Cell>
                             </M.Grid>
                         </div>
                     </M.Content>
                 </M.Layout>
+                {this.state.showSaveDialog &&
+                    <SaveDialog columns={estimationMetadataColumns} value={userData.estimationMetadata} onChange={this.changeMetadata} onSave={this.save} onClose={this.closeSaveDialog} />
+                }
             </div >
         );
     }
@@ -136,12 +189,15 @@ function mapStateToProps(state: RootState, props: Props): Props {
     return {
         rootState: state,
 
+        estimationMetadataColumns: state.app.present.estimationMetadataColumns,
         summaryColumns: state.app.present.summaryColumns,
         purchaseItemsColumns: state.app.present.purchaseItemsColumns,
+
         priceList: getVisibleOptions(state),
+
+        userData: state.app.present.userData,
+
         searchWord: state.app.present.searchWord,
-        dollarExchangeRate: state.app.present.userData.dollarExchangeRate,
-        purchaseItems: state.app.present.userData.purchaseItems,
         purchaseDetailItems: getPurchaseDetailItems(state),
 
         currentSavedHistory: getCurrentSavedHistory(state),

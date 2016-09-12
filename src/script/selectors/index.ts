@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { RootState, AppState, SavedHistory, Item, PurchaseItem, UserData } from '../reducers';
+import { RootState, AppState, Item, PurchaseItem, UserData, Option } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
@@ -12,15 +12,7 @@ export const getVisiblePriceList = createSelector<RootState, Item[], Item[], Pur
         const addedIds = purchaseItems.map(x => x.id);
         return priceList.filter(x => !addedIds.find(y => x.id === y));
     }
-)
-
-export interface Option {
-    label?: string;
-    text: string;
-    disabled?: boolean;
-    static?: boolean;
-    value?: string
-}
+);
 
 export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
     getVisiblePriceList,
@@ -33,7 +25,7 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
         });
         return priceOptions;
     }
-)
+);
 
 export interface PurchaseDetailItem extends PurchaseItem, Item {
 }
@@ -49,7 +41,7 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
             }, item, x);
         });
     }
-)
+);
 
 export const getCurrentSavedHistory = createSelector<RootState, UserData, AppState>(
     getPresentAppState,
@@ -58,11 +50,11 @@ export const getCurrentSavedHistory = createSelector<RootState, UserData, AppSta
         const found = appState.savedHistory.find(x => x.date === date);
         return found;
     }
-)
+);
 
 export const isEditing = createSelector<RootState, boolean, UserData>(
     getCurrentSavedHistory,
     (userData) => {
         return userData === undefined;
     }
-)
+);

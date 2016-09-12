@@ -15,25 +15,22 @@ module.exports = {
             { name: 'profitRate', 'label': '利益率', type: 'rate' }
         ],
         purchaseItemsColumns: [
-            [
-                { name: 'itemId', 'label': '商品番号' },
-                { name: 'name', 'label': '商品名' },
-                { name: 'unit', 'label': '単位' },
-                { name: 'suppliersPrice', 'label': '仕入単価', type: 'yen' }
-            ]
+            { name: 'itemId', 'label': '商品番号' },
+            { name: 'name', 'label': '商品名' },
+            { name: 'unit', 'label': '単位' },
+            { name: 'suppliersPrice', 'label': '仕入単価', type: 'yen' }
         ]
     },
-    settings: [
+    sellers: [
         {
+            name: 'distributor',
             summaryColumns: [
                 { name: 'receipt', 'label': '売上', type: 'yen' }
             ],
             purchaseItemsColumns: [
-                [
-                    { name: 'itemId', 'label': '商品番号' },
-                    { name: 'name', 'label': '商品名' },
-                    { name: 'unit', 'label': '単位' }
-                ]
+                { name: 'itemId', 'label': '商品番号' },
+                { name: 'name', 'label': '商品名' },
+                { name: 'unit', 'label': '単位' }
             ]
         }
     ]

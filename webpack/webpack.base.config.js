@@ -12,7 +12,7 @@ NODE_ENV = NODE_ENV && NODE_ENV.trim() === 'production' ? 'production' : 'develo
 
 
 function makeConfig(settings) {
-  var sellerSettings = settings.settings.map(x => {
+  var sellerSettings = settings.sellers.map(x => {
     return Object.assign({}, settings.default, x);
   });
   var configs = [settings.default].concat(sellerSettings);
@@ -22,7 +22,7 @@ function makeConfig(settings) {
       target: 'web',
       entry: ['babel-polyfill', './src/script/index.tsx', './src/style/main.scss'],
       output: {
-        path: path.join(__dirname, '../dist/' + x.seller),
+        path: path.join(__dirname, '../dist/' + x.name),
         // publicPath: '',
         //publicPath: '',
         filename: 'app.js'
@@ -47,7 +47,7 @@ function makeConfig(settings) {
           },
           {
             test: /\.(c|t)sv$/,
-            loaders: ['DataLoader?seller=' + x.seller],
+            loaders: ['DataLoader?seller=' + x.name],
           },
           {
             test: /\.scss$/,
@@ -86,7 +86,7 @@ function makeConfig(settings) {
         }),
         new webpack.DefinePlugin({
           'process.env.NODE_ENV': '"' + NODE_ENV + '"',
-          'process.env.SELLER': '"' + x.seller + '"',
+          'process.env.SELLER': '"' + x.name + '"',
           'process.env.ESTIMATION_METADATA': JSON.stringify(x.estimationMetadata),
           'process.env.SUMMARY_COLUMNS': JSON.stringify(x.summaryColumns),
           'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(x.purchaseItemsColumns)

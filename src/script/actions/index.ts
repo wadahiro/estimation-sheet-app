@@ -6,7 +6,8 @@ export type Actions =
     AddItem |
     DeleteItem |
     ModifyQuantity |
-    RestoreSavedHistory
+    RestoreSavedHistory |
+    ModifyMetadata
     ;
 
 export interface SearchItem extends Action {
@@ -61,7 +62,7 @@ export interface ModifyQuantity extends Action {
         quantity: number;
     };
 }
-export function modifyQuantity(id, quantity): ModifyQuantity {
+export function modifyQuantity(id: string, quantity: number): ModifyQuantity {
     return {
         type: 'MOD_QUANTITY',
         payload: {
@@ -82,6 +83,23 @@ export function restoreSavedHistory(date: string): RestoreSavedHistory {
         type: 'RESTORE_SAVED_HISTORY',
         payload: {
             date
+        }
+    };
+}
+
+export interface ModifyMetadata extends Action {
+    type: 'MOD_METADATA';
+    payload: {
+        name: string;
+        value: string;
+    };
+}
+export function modifyMetadata(name: string, value: string): ModifyMetadata {
+    return {
+        type: 'MOD_METADATA',
+        payload: {
+            name,
+            value
         }
     };
 }

@@ -8,6 +8,7 @@ require('moment');
 require('reselect');
 require('react-mdl');
 require('react-input-enhancements');
+require('react-undo');
 
 // for dev
 if (process.env.NODE_ENV !== 'production') {

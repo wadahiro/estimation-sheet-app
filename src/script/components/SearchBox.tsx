@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as M from 'react-mdl';
 
-import { Option } from '../selectors';
+import { Option } from '../reducers';
 
 const { Combobox } = require('react-input-enhancements');
 

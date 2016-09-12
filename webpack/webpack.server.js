@@ -1,7 +1,8 @@
 var webpack = require('webpack')
 var WebpackDevServer = require('webpack-dev-server')
-var config = require('./webpack.config')
+var configs = require('./webpack.config')
 
+var config = configs[0];
 config.entry.unshift('webpack/hot/only-dev-server')
 config.entry.unshift('webpack-dev-server/client?http://localhost:9000')
 

@@ -75,3 +75,17 @@ body {
 .quantity input {
     text-align: right;
 }
+
+
+.mdl-dialog.save-dialog {
+    width: 500px;
+    .mdl-textfield {
+        padding: 5px 0;
+    }
+    .mdl-textfield__label {
+        top: 10px;
+    }
+    .mdl-textfield__label:after {
+        bottom: 5px;
+    }
+}

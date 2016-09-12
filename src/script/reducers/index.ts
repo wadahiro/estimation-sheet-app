@@ -20,6 +20,7 @@ export interface AppStateHistory {
 }
 
 export interface AppState {
+    estimationMetadataColumns: Column[];
     summaryColumns: Column[];
     purchaseItemsColumns: Column[];
 
@@ -33,7 +34,17 @@ export interface AppState {
 export interface Column {
     name: string;
     label: string;
-    type: 'yen' | 'rate';
+    type?: 'yen' | 'rate';
+    required?: boolean;
+    options?: Option[]
+}
+
+export interface Option {
+    label?: string;
+    text: string;
+    disabled?: boolean;
+    static?: boolean;
+    value?: string
 }
 
 export interface Item {
@@ -61,6 +72,9 @@ export interface SavedHistory {
 
 export interface UserData {
     date: string;
+    estimationMetadata: {
+        [index: string]: string;
+    };
     dollarExchangeRate: number;
     purchaseItems: PurchaseItem[];
 }
@@ -68,14 +82,15 @@ export interface UserData {
 // for test server
 if (process.env.NODE_ENV !== 'production') {
     window['SAVED_HISTORY'] = [
-        { date: '2016-08-01 13:33:20', dollarExchangeRate: 120, purchaseItems: [{ id: '1', quantity: 20 }] },
-        { date: '2016-09-06 09:10:40', dollarExchangeRate: 100, purchaseItems: [{ id: '20', quantity: 5 }, { id: '49', quantity: 8 }] }
+        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, dollarExchangeRate: 120, purchaseItems: [{ id: '1', quantity: 20 }] },
+        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, dollarExchangeRate: 100, purchaseItems: [{ id: '20', quantity: 5 }, { id: '49', quantity: 8 }] }
     ];
 }
 
 function init(): AppState {
     let userData: UserData = {
         date: '',
+        estimationMetadata: {},
         dollarExchangeRate: 120,
         purchaseItems: []
     };
@@ -86,6 +101,7 @@ function init(): AppState {
     }
 
     return {
+        estimationMetadataColumns: process.env.ESTIMATION_METADATA,
         summaryColumns: process.env.SUMMARY_COLUMNS,
         purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
 
@@ -158,6 +174,15 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
             return Object.assign({}, state, {
                 userData: state.savedHistory[restoredIndex]
+            });
+
+        case 'MOD_METADATA':
+            return Object.assign({}, state, {
+                userData: Object.assign({}, state.userData, {
+                    estimationMetadata: Object.assign({}, state.userData.estimationMetadata, {
+                        [action.payload.name]: action.payload.value
+                    })
+                })
             });
     }
 
