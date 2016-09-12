@@ -5,8 +5,8 @@ import * as M from 'react-mdl';
 import { createSelector } from 'reselect';
 
 import * as Actions from '../actions';
-import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem, isEditing } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, SavedHistory, Data } from '../reducers';
+import { getVisiblePriceList, getVisibleOptions, Option, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
+import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData } from '../reducers';
 import { SearchBox } from './SearchBox';
 import { Summary } from './Summary';
 import { PurchaseItems } from './PurchaseItems';
@@ -25,8 +25,8 @@ interface Props {
     purchaseItems?: PurchaseItem[];
     purchaseDetailItems?: PurchaseDetailItem[];
 
-    currentSavedHistory?: Data,
-    savedHistory?: SavedHistory;
+    currentSavedHistory?: UserData,
+    savedHistory?: UserData[];
     editing?: boolean;
 }
 
@@ -93,7 +93,7 @@ class App extends React.Component<Props, void> {
                         </M.Navigation>
                     </M.Header>
                     <M.Drawer title='保存履歴'>
-                        <HistoryMenu history={savedHistory.history} goto={this.restoreSavedHistory} />
+                        <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
                     </M.Drawer>
                     <M.Content>
                         <div style={{ width: '90%', margin: 'auto' }}>
@@ -136,16 +136,16 @@ function mapStateToProps(state: RootState, props: Props): Props {
     return {
         rootState: state,
 
-        summaryColumns: state.app.summaryColumns,
-        purchaseItemsColumns: state.app.purchaseItemsColumns,
+        summaryColumns: state.app.present.summaryColumns,
+        purchaseItemsColumns: state.app.present.purchaseItemsColumns,
         priceList: getVisibleOptions(state),
-        searchWord: state.app.searchWord,
-        dollarExchangeRate: state.app.current.dollarExchangeRate,
-        purchaseItems: state.app.current.purchaseItems,
+        searchWord: state.app.present.searchWord,
+        dollarExchangeRate: state.app.present.userData.dollarExchangeRate,
+        purchaseItems: state.app.present.userData.purchaseItems,
         purchaseDetailItems: getPurchaseDetailItems(state),
 
-        currentSavedHistory: state.app.savedHistory.history[state.app.current.currentSavedHistory],
-        savedHistory: state.app.savedHistory,
+        currentSavedHistory: getCurrentSavedHistory(state),
+        savedHistory: state.app.present.savedHistory,
         editing: isEditing(state)
     };
 }

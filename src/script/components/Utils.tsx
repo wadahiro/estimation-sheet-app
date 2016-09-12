@@ -23,7 +23,7 @@ export function save(rootState: RootState) {
     const now = moment();
     const title = `${document.title}-${now.format('YYYY-MM-DD_HH_mm_ss')}`;
 
-    const savedHistory = rootState.app.savedHistory.history.concat(Object.assign({}, rootState.app.current, {
+    const savedHistory = rootState.app.present.savedHistory.concat(Object.assign({}, rootState.app.present.userData, {
         date: now.format('YYYY-MM-DD HH:mm:ss')
     }));
 

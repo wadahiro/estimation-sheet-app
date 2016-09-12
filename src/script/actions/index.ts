@@ -1,13 +1,12 @@
 import { Action } from 'redux';
+const { ActionCreators } = require('redux-undo');
 
 export type Actions =
     SearchItem |
     AddItem |
     DeleteItem |
     ModifyQuantity |
-    RestoreSavedHistory |
-    Undo |
-    Redo
+    RestoreSavedHistory
     ;
 
 export interface SearchItem extends Action {
@@ -87,20 +86,10 @@ export function restoreSavedHistory(date: string): RestoreSavedHistory {
     };
 }
 
-export interface Undo extends Action {
-    type: 'UNDO';
-}
-export function undo(): Undo {
-    return {
-        type: 'UNDO'
-    };
+export function undo() {
+    return ActionCreators.undo();
 }
 
-export interface Redo extends Action {
-    type: 'REDO';
-}
-export function redo(): Redo {
-    return {
-        type: 'REDO'
-    };
+export function redo() {
+    return ActionCreators.redo();
 }

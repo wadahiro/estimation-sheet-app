@@ -3,10 +3,20 @@ import { combineReducers } from 'redux';
 import * as Actions from '../actions';
 import { now } from '../components/Utils';
 
+const ReduxUndo = require('redux-undo');
+const undoable = ReduxUndo.default;
+const includeAction = ReduxUndo.includeAction;
+
 const PRICE_LIST = require('../data/price-list.csv');
 
 export interface RootState {
-    app: AppState;
+    app: AppStateHistory;
+}
+
+export interface AppStateHistory {
+    past: AppState[];
+    present: AppState;
+    future: AppState[];
 }
 
 export interface AppState {
@@ -16,10 +26,8 @@ export interface AppState {
     priceList: Item[];
     searchWord: string;
 
-    // user editable data
-    current: Data;
-    appHistory: AppHistory;
-    savedHistory: SavedHistory;
+    userData: UserData;
+    savedHistory: UserData[];
 }
 
 export interface Column {
@@ -47,21 +55,14 @@ export interface PurchaseItem {
     quantity: number;
 }
 
-export interface AppHistory {
-    current: number;
-    history: Data[];
-}
-
 export interface SavedHistory {
-    history: Data[];
+    history: UserData[];
 }
 
-export interface Data {
+export interface UserData {
     date: string;
     dollarExchangeRate: number;
     purchaseItems: PurchaseItem[];
-
-    currentSavedHistory: number;
 }
 
 // for test server
@@ -73,19 +74,15 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 function init(): AppState {
-    let data: Data = {
+    let userData: UserData = {
         date: '',
         dollarExchangeRate: 120,
-        purchaseItems: [],
-        currentSavedHistory: 0
+        purchaseItems: []
     };
 
-    const savedHistory: Data[] = (window['SAVED_HISTORY'] ? window['SAVED_HISTORY'] : []).map((x, index) => {
-        x.currentSavedHistory = index;
-        return x;
-    });
+    const savedHistory: UserData[] = window['SAVED_HISTORY'] ? window['SAVED_HISTORY'] : [];
     if (savedHistory.length > 0) {
-        data = savedHistory[savedHistory.length - 1];
+        userData = savedHistory[savedHistory.length - 1];
     }
 
     return {
@@ -95,16 +92,8 @@ function init(): AppState {
         searchWord: null,
         priceList: initPriceList(PRICE_LIST),
 
-        current: data,
-
-        appHistory: {
-            current: 0,
-            history: [data]
-        },
-
-        savedHistory: {
-            history: savedHistory
-        }
+        userData,
+        savedHistory
     };
 }
 
@@ -112,53 +101,6 @@ function initPriceList(list): Item[] {
     return list.map(x => {
         return x;
     });
-}
-
-export const history = (reducer: (state: AppState, action: Actions.Actions) => AppState) => (state: AppState, action: Actions.Actions) => {
-    const currentState = state ? Object.assign({}, state, {
-        current: state.appHistory.history[state.appHistory.current]
-    }) : state;
-
-    const newState = reducer(currentState, action);
-
-    switch (action.type) {
-        case 'ADD_ITEM':
-        case 'DELETE_ITEM':
-        case 'MOD_QUANTITY':
-        case 'RESTORE_SAVED_HISTORY':
-            const h = newState.appHistory.history.slice(0, newState.appHistory.current + 1);
-
-            return Object.assign({}, newState, {
-                appHistory: {
-                    current: newState.appHistory.current + 1,
-                    history: h.concat(newState.current)
-                }
-            });
-
-        case 'UNDO':
-            if (newState.appHistory.current > 0) {
-                return Object.assign({}, newState, {
-                    appHistory: {
-                        current: newState.appHistory.current - 1,
-                        history: newState.appHistory.history
-                    }
-                });
-            }
-            return newState;
-
-        case 'REDO':
-            if (newState.appHistory.current < newState.appHistory.history.length - 1) {
-                return Object.assign({}, newState, {
-                    appHistory: {
-                        current: newState.appHistory.current + 1,
-                        history: newState.appHistory.history
-                    }
-                });
-            }
-            return newState;
-    }
-
-    return newState;
 }
 
 export const appStateReducer = (state: AppState = init(), action: Actions.Actions) => {
@@ -173,9 +115,9 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             if (item) {
                 return Object.assign({}, state, {
                     searchWord: null,
-                    current: Object.assign({}, state.current, {
+                    userData: Object.assign({}, state.userData, {
                         date: now(),
-                        purchaseItems: state.current.purchaseItems.concat({
+                        purchaseItems: state.userData.purchaseItems.concat({
                             id: item.id,
                             quantity: 1
                         })
@@ -185,12 +127,12 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             return state;
 
         case 'DELETE_ITEM':
-            const deleteItem = state.current.purchaseItems.find(x => x.id === action.payload.id);
+            const deleteItem = state.userData.purchaseItems.find(x => x.id === action.payload.id);
             if (deleteItem) {
                 return Object.assign({}, state, {
-                    current: Object.assign({}, state.current, {
+                    userData: Object.assign({}, state.userData, {
                         date: now(),
-                        purchaseItems: state.current.purchaseItems.filter(x => x.id !== deleteItem.id)
+                        purchaseItems: state.userData.purchaseItems.filter(x => x.id !== deleteItem.id)
                     })
                 });
             }
@@ -198,9 +140,9 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
         case 'MOD_QUANTITY':
             return Object.assign({}, state, {
-                current: Object.assign({}, state.current, {
+                userData: Object.assign({}, state.userData, {
                     date: now(),
-                    purchaseItems: state.current.purchaseItems.map(x => {
+                    purchaseItems: state.userData.purchaseItems.map(x => {
                         if (x.id === action.payload.id) {
                             return Object.assign({}, x, {
                                 quantity: action.payload.quantity
@@ -212,10 +154,10 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             });
 
         case 'RESTORE_SAVED_HISTORY':
-            const restoredIndex = state.savedHistory.history.findIndex(x => x.date === action.payload.date);
+            const restoredIndex = state.savedHistory.findIndex(x => x.date === action.payload.date);
 
             return Object.assign({}, state, {
-                current: state.savedHistory.history[restoredIndex]
+                userData: state.savedHistory[restoredIndex]
             });
     }
 
@@ -223,7 +165,7 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 };
 
 export default combineReducers({
-    app: history(appStateReducer),
+    app: undoable(appStateReducer, {
+        filter: includeAction(['SOME_ACTION', 'DELETE_ITEM', 'MOD_QUANTITY', 'RESTORE_SAVED_HISTORY'])
+    }),
 });
-
-

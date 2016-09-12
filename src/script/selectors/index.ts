@@ -1,12 +1,12 @@
 import { createSelector } from 'reselect';
-import { RootState, AppHistory, SavedHistory, Item, PurchaseItem } from '../reducers';
+import { RootState, AppState, SavedHistory, Item, PurchaseItem, UserData } from '../reducers';
 
-const getPriceList = (state: RootState) => state.app.priceList;
-const getPurchaseItems = (state: RootState) => state.app.appHistory.history[state.app.appHistory.current].purchaseItems;
-const getDollarExchangeRate = (state: RootState) => state.app.appHistory.history[state.app.appHistory.current].dollarExchangeRate;
-const getAppHistory = (state: RootState) => state.app.appHistory;
-const getSavedHistory = (state: RootState) => state.app.savedHistory;
-const getCurrent = (state: RootState) => state.app.current;
+const getPriceList = (state: RootState) => state.app.present.priceList;
+const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
+const getDollarExchangeRate = (state: RootState) => state.app.present.userData.dollarExchangeRate;
+const getAppHistory = (state: RootState) => state.app.past;
+const getSavedHistory = (state: RootState) => state.app.present.savedHistory;
+const getPresentAppState = (state: RootState) => state.app.present;
 
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
     getPriceList, getPurchaseItems,
@@ -53,11 +53,18 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
     }
 )
 
-export const isEditing = createSelector<RootState, boolean, AppHistory, SavedHistory>(
-    getAppHistory, getSavedHistory,
-    (appHistory, savedHistory) => {
-        const currentApp = appHistory.history[appHistory.current];
-        const currentSaved = savedHistory.history[currentApp.currentSavedHistory];
-        return currentApp !== currentSaved;
+export const getCurrentSavedHistory = createSelector<RootState, UserData, AppState>(
+    getPresentAppState,
+    (appState) => {
+        const date = appState.userData.date;
+        const found = appState.savedHistory.find(x => x.date === date);
+        return found;
+    }
+)
+
+export const isEditing = createSelector<RootState, boolean, UserData>(
+    getCurrentSavedHistory,
+    (userData) => {
+        return userData === undefined;
     }
 )
