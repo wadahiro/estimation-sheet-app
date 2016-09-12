@@ -15,6 +15,7 @@ function makeConfig(settings) {
   var sellerSettings = settings.sellers.map(x => {
     return Object.assign({}, settings.default, x);
   });
+  var defaultSetting = Object.assign({}, settings.default, { name: 'default' });
   var configs = [settings.default].concat(sellerSettings);
   return configs.map(x => {
 
@@ -44,6 +45,10 @@ function makeConfig(settings) {
           {
             test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
             loader: "url-loader?mimetype=application/font-woff"
+          },
+          {
+            test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+            loader: "url-loader?mimetype=image/svg+xml"
           },
           {
             test: /\.(c|t)sv$/,
@@ -97,13 +102,6 @@ function makeConfig(settings) {
           filename: 'index.html',
           template: NODE_ENV === 'production' ? path.join(__dirname, '../src/template.jade') : path.join(__dirname, '../src/index.html'),
           hash: false
-        }),
-        new AddAssetHtmlPlugin({
-          filename: require.resolve('../node_modules/react-mdl/extra/material.js'),
-          publicPath: 'assets',
-          outputPath: 'assets',
-          hash: false,
-          includeSourcemap: false
         }),
         new AddAssetHtmlPlugin({
           filename: require.resolve('../.dll/vendor.js'),

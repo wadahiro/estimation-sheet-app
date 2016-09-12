@@ -1,5 +1,6 @@
 import * as React from 'react';
-import * as M from 'react-mdl';
+
+import TextField from 'material-ui/TextField';
 
 import { Option } from '../reducers';
 
@@ -36,13 +37,11 @@ export class SearchBox extends React.Component<Props, void> {
                 onChange={this.handleChange}
                 autocomplete>
                 {inputProps => {
-                    return <M.Textfield
+                    return <TextField
                         {...inputProps}
                         className='select-item'
-                        label=''
                         style={{ width: '100%' }}
-                        placeholder='商品を選択してください'
-                        expandableIcon='search'
+                        hintText='商品を選択してください'
                         />
                 } }
             </Combobox>

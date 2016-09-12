@@ -6,9 +6,9 @@ require('redux');
 // add other libraries here as well
 require('moment');
 require('reselect');
-require('react-mdl');
+// require('react-mdl');
 require('react-input-enhancements');
-require('react-undo');
+require('redux-undo');
 
 // for dev
 if (process.env.NODE_ENV !== 'production') {

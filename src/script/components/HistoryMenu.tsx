@@ -1,5 +1,6 @@
 import * as React from 'react';
-import * as M from 'react-mdl';
+
+import MenuItem from 'material-ui/MenuItem';
 
 import { Option } from '../reducers';
 
@@ -30,15 +31,15 @@ export class HistoryMenu extends React.Component<Props, void> {
         const { history } = this.props;
 
         return (
-            <M.Navigation>
+            <div>
                 {history.concat().reverse().map(x => {
-                    return <div>
+                    return <MenuItem>
                         <a href='#' onClick={this.handleClick(x.date)}>{x.date}</a>
                         <div>{x.estimationMetadata['customerName']}</div>
                         <div>{x.estimationMetadata['title']}</div>
-                    </div>;
+                    </MenuItem>;
                 })}
-            </M.Navigation>
+            </div>
         );
     }
 

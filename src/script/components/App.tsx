@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
-import * as M from 'react-mdl';
 import { createSelector } from 'reselect';
+
+import AppBar from 'material-ui/AppBar';
+import Drawer from 'material-ui/Drawer';
 
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
@@ -34,13 +36,15 @@ interface Props {
 }
 
 interface State {
-    showSaveDialog: boolean;
+    showSaveDialog?: boolean;
+    showDrawer?: boolean;
 }
 
 class App extends React.Component<Props, State> {
     state = {
-        showSaveDialog: false
-    }
+        showSaveDialog: false,
+        showDrawer: false
+    };
 
     addItem = (id: string) => {
         this.props.dispatch(Actions.addItem(id));
@@ -56,6 +60,13 @@ class App extends React.Component<Props, State> {
 
     deleteItem = (id: string) => {
         this.props.dispatch(Actions.deleteItem(id));
+    };
+
+    openDrawer = (e) => {
+        e.preventDefault();
+        this.setState({
+            showDrawer: true
+        });
     };
 
     openSaveDialog = (e) => {
@@ -136,47 +147,29 @@ class App extends React.Component<Props, State> {
 
         return (
             <div>
-                <M.Layout fixedHeader>
-                    <M.Header title={this.getTitle()}>
-                        <M.Navigation>
-                            <a href='#'>価格一覧</a>
-                        </M.Navigation>
-                    </M.Header>
-                    <M.Drawer title='保存履歴'>
-                        <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
-                    </M.Drawer>
-                    <M.Content>
-                        <div style={{ width: '90%', margin: 'auto' }}>
-                            <M.Grid>
-                                <M.Cell col={8}>
-                                    <SearchBox value={searchWord}
-                                        options={priceList}
-                                        onValueChange={this.addItem}
-                                        onChangeSearchWord={this.searchItem} />
-                                </M.Cell>
-                                <M.Cell col={4}>
-                                    <Summary columns={summaryColumns} purchaseDetailItems={purchaseDetailItems} />
-                                </M.Cell>
-                            </M.Grid>
-                            <M.Grid>
-                                <M.Cell col={12}>
-                                    <PurchaseItems columns={purchaseItemsColumns}
-                                        purchaseDetailItems={purchaseDetailItems}
-                                        onChangeQuantity={this.changeQuantity}
-                                        onDeleteItem={this.deleteItem}
-                                        />
-                                </M.Cell>
-                            </M.Grid>
-                            <M.Grid>
-                                <M.Cell col={10}>
-                                </M.Cell>
-                                <M.Cell col={2}>
-                                    <M.Button raised colored ripple onClick={this.openSaveDialog}>ファイルに保存</M.Button>
-                                </M.Cell>
-                            </M.Grid>
-                        </div>
-                    </M.Content>
-                </M.Layout>
+                <AppBar title={this.getTitle()} iconClassNameRight='muidocs-icon-save' onLeftIconButtonTouchTap={this.openDrawer}>
+                </AppBar>
+                <Drawer open={this.state.showDrawer}>
+                    <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
+                </Drawer>
+                <div style={{ width: '90%', margin: 'auto' }}>
+                    <div>
+                        <SearchBox value={searchWord}
+                            options={priceList}
+                            onValueChange={this.addItem}
+                            onChangeSearchWord={this.searchItem} />
+                    </div>
+                    <div>
+                        <Summary columns={summaryColumns} purchaseDetailItems={purchaseDetailItems} />
+                    </div>
+                    <div>
+                        <PurchaseItems columns={purchaseItemsColumns}
+                            purchaseDetailItems={purchaseDetailItems}
+                            onChangeQuantity={this.changeQuantity}
+                            onDeleteItem={this.deleteItem}
+                            />
+                    </div>
+                </div>
                 {this.state.showSaveDialog &&
                     <SaveDialog columns={estimationMetadataColumns} value={userData.estimationMetadata} onChange={this.changeMetadata} onSave={this.save} onClose={this.closeSaveDialog} />
                 }

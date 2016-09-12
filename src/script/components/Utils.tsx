@@ -2,20 +2,22 @@ import { RootState } from '../reducers';
 
 const moment = require('moment');
 
-export function toYen(price: number = 0) {
+export function toYen(price: number = 0): string {
     return `${String(price).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')} 円`;
 }
 
-export function toPercentage(rate: number) {
+export function toPercentage(rate: number): string {
     return `${Math.floor(rate * 100)} %`;
 }
 
-export function format(type: 'yen' | 'rate') {
+export function format(type: 'yen' | 'rate', value: string | number): string {
     switch (type) {
         case 'yen':
-            return toYen;
+            return toYen(value as number);
         case 'rate':
-            return toPercentage;
+            return toPercentage(value as number);
+        default:
+            return value as string;
     }
 }
 

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import * as M from 'react-mdl';
+
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
 import { PurchaseDetailItem } from '../selectors';
 import { RootState, Column } from '../reducers';
@@ -24,19 +25,34 @@ export class Summary extends React.Component<Props, void> {
         }
 
         return (
-            <M.DataTable
+            <Table
                 style={{ width: '100%' }}
-                rows={[sum]}
                 >
-                {columns.map(x => {
-                    return (
-                        <M.TableHeader key={x.name} numeric name={x.name} cellFormatter={format(x.type)} >
-                            {x.label}
-                        </M.TableHeader>
-                    );
-                })
-                }
-            </M.DataTable>
+
+                <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                    <TableRow>
+                        {columns.map(x => {
+                            return (
+                                <TableHeaderColumn key={x.name} >
+                                    {x.label}
+                                </TableHeaderColumn>
+                            );
+                        })}
+                    </TableRow>
+                </TableHeader>
+                <TableBody displayRowCheckbox={false}>
+                    <TableRow >
+                        {columns.map(x => {
+                            const value = format(x.type, sum[x.name]);
+                            return (
+                                <TableRowColumn key={x.name} >
+                                    {value}
+                                </TableRowColumn>
+                            );
+                        })}
+                    </TableRow>
+                </TableBody>
+            </Table>
         );
     }
 }
