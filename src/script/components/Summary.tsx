@@ -42,7 +42,7 @@ export class Summary extends React.Component<Props, void> {
 }
 
 function calcCost(item: PurchaseDetailItem) {
-    if (item.suppliersPrice === 0) {
+    if (item.suppliersPrice === 0 || item.suppliersPrice === undefined) {
         return item.price / 4;
     } else {
         return item.suppliersPrice;
