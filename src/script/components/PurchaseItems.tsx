@@ -9,6 +9,8 @@ import { PurchaseDetailItem } from '../selectors';
 import { RootState, Column } from '../reducers';
 import { format, toYen, toPercentage } from './Utils';
 
+const style = require('./style.css');
+
 interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
@@ -71,6 +73,9 @@ export class PurchaseItems extends React.Component<Props, void> {
         const idColStyle = {
             width: 50
         };
+        const columnStyle = {
+            whiteSpace: 'normal'
+        };
 
         return (
             <Paper zDepth={2} >
@@ -106,12 +111,12 @@ export class PurchaseItems extends React.Component<Props, void> {
                                         const value = format(y.type, x[y.name]);
 
                                         return (
-                                            <TableRowColumn key={y.name} style={{ whiteSpace: 'normal' }}>{value}</TableRowColumn>
+                                            <TableRowColumn key={y.name} style={columnStyle}>{value}</TableRowColumn>
                                         );
                                     })}
 
-                                    <TableRowColumn>{this.renderQuantity(x)}</TableRowColumn>
-                                    <TableRowColumn>{this.renderPrice(x)}</TableRowColumn>
+                                    <TableRowColumn style={columnStyle}>{this.renderQuantity(x)}</TableRowColumn>
+                                    <TableRowColumn style={columnStyle}>{this.renderPrice(x)}</TableRowColumn>
                                     <TableRowColumn>{this.renderAction(x)}</TableRowColumn>
                                 </TableRow>
                             );

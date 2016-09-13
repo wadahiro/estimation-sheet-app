@@ -25,6 +25,11 @@ export class Summary extends React.Component<Props, void> {
             profitRate: (receipt - cost) / receipt
         }
 
+        const columnStyle = {
+            height: 20,
+            whiteSpace: 'normal'
+        };
+
         return (
             <Paper>
                 <Table
@@ -47,7 +52,7 @@ export class Summary extends React.Component<Props, void> {
                             {columns.map(x => {
                                 const value = format(x.type, sum[x.name]);
                                 return (
-                                    <TableRowColumn key={x.name} >
+                                    <TableRowColumn key={x.name} style={columnStyle}>
                                         {value}
                                     </TableRowColumn>
                                 );

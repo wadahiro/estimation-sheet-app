@@ -55,6 +55,10 @@ function makeConfig(settings) {
             loaders: ['DataLoader?seller=' + x.name],
           },
           {
+            test: /\.css$/,
+            loader: 'style-loader!css-loader?modules',
+          },
+          {
             test: /\.scss$/,
             loader: 'style-loader!css-loader!sass-loader',
           },

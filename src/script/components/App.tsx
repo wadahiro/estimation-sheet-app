@@ -3,18 +3,26 @@ import { Dispatch, Action } from 'redux';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 
-import AppBar from 'material-ui/AppBar';
 import Drawer from 'material-ui/Drawer';
+import IconButton from 'material-ui/IconButton';
+import FileDownload from 'material-ui/svg-icons/file/file-download';
+import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
 import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData, Option } from '../reducers';
+import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
+import { EstimationMetadata } from './EstimationMetadata';
 import { Summary } from './Summary';
 import { PurchaseItems } from './PurchaseItems';
 import { HistoryMenu } from './HistoryMenu';
 import { SaveDialog } from './SaveDialog';
 import { save } from './Utils';
+
+const style = require('./style.css');
+
+const { Grid, Row, Col } = require('react-flexbox-grid');
 
 interface Props {
     dispatch?: Dispatch<RootState>;
@@ -30,7 +38,6 @@ interface Props {
 
     userData?: UserData,
 
-    currentSavedHistory?: UserData,
     savedHistory?: UserData[];
     editing?: boolean;
 }
@@ -126,55 +133,61 @@ class App extends React.Component<Props, State> {
         document.onkeydown = undefined;
     }
 
-    getTitle() {
-        const customerName = this.props.userData.estimationMetadata['customerName'];
-        const title = this.props.userData.estimationMetadata['title'];
-        const displayTitle = title ? title : '';
-        const displayCustomerName = customerName ? customerName : '';
-
-        const display = (displayTitle || customerName) ? `- ${displayCustomerName} : ${displayTitle}` : '';
-
-        if (this.props.editing) {
-            return `概算見積もり ${display} (編集中...)`;
-        } else {
-            return `概算見積もり ${display} (${this.props.currentSavedHistory.date})`;
-        }
-    }
-
     render() {
+        const iconStyles = {
+            marginRight: 24
+        };
+
         const { estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
             priceList,
             userData,
-            searchWord, purchaseDetailItems, currentSavedHistory, savedHistory,
+            searchWord, purchaseDetailItems, savedHistory,
             editing } = this.props;
 
         return (
             <div>
-                <AppBar title={this.getTitle()} iconClassNameRight='muidocs-icon-navigation-expand-more' onLeftIconButtonTouchTap={this.openDrawer}>
-                </AppBar>
+                <NavBar userData={userData}
+                    onClickMenu={this.openDrawer}
+                    onClickSave={this.openSaveDialog}
+                    editing={editing} />
+
                 <Drawer open={this.state.showDrawer}
                     docked={false}
+                    width={400}
                     onRequestChange={(showDrawer) => this.setState({ showDrawer })}>
-                    <HistoryMenu history={savedHistory} goto={this.restoreSavedHistory} />
+                    <HistoryMenu columns={estimationMetadataColumns} history={savedHistory} goto={this.restoreSavedHistory} />
                 </Drawer>
-                <div style={{ width: '90%', margin: 'auto' }}>
-                    <div>
-                        <SearchBox value={searchWord}
-                            options={priceList}
-                            onValueChange={this.addItem}
-                            onChangeSearchWord={this.searchItem} />
-                    </div>
-                    <div>
-                        <Summary columns={summaryColumns} purchaseDetailItems={purchaseDetailItems} />
-                    </div>
-                    <div>
+
+                <Grid className={style.grid}>
+                    <Row className={style.row}>
+                        <Col xs={6}>
+                            <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} />
+                        </Col>
+                        <Col xs={6}>
+                            <Summary columns={summaryColumns} purchaseDetailItems={purchaseDetailItems} />
+                        </Col>
+                    </Row>
+                </Grid>
+
+                <Divider />
+
+                <Grid className={style.grid}>
+                    <Row className={style.row}>
+                        <Col xs={12}>
+                            <SearchBox value={searchWord}
+                                options={priceList}
+                                onValueChange={this.addItem}
+                                onChangeSearchWord={this.searchItem} />
+                        </Col>
+                    </Row>
+                    <Row className={style.row}>
                         <PurchaseItems columns={purchaseItemsColumns}
                             purchaseDetailItems={purchaseDetailItems}
                             onChangeQuantity={this.changeQuantity}
                             onDeleteItem={this.deleteItem}
                             />
-                    </div>
-                </div>
+                    </Row>
+                </Grid>
                 {this.state.showSaveDialog &&
                     <SaveDialog columns={estimationMetadataColumns} value={userData.estimationMetadata} onChange={this.changeMetadata} onSave={this.save} onClose={this.closeSaveDialog} />
                 }
@@ -198,7 +211,6 @@ function mapStateToProps(state: RootState, props: Props): Props {
         searchWord: state.app.present.searchWord,
         purchaseDetailItems: getPurchaseDetailItems(state),
 
-        currentSavedHistory: getCurrentSavedHistory(state),
         savedHistory: state.app.present.savedHistory,
         editing: isEditing(state)
     };
