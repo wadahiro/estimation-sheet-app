@@ -17,7 +17,7 @@ module.exports = function (text) {
         const res = rows ? dsv.parseRows(text) : dsv.parse(text);
 
         const currentBuildSettings = buildSettings.sellers.find(x => x.name === seller);
-        const supplierPriceRules = (currentBuildSettings && currentBuildSettings.supplierPriceRules) ? currentBuildSettings.supplierPriceRules : buildSettings.default.supplierPriceRules;
+        const dynamicPriceRules = (currentBuildSettings && currentBuildSettings.dynamicPriceRules) ? currentBuildSettings.dynamicPriceRules : buildSettings.default.dynamicPriceRules;
 
         const resolvedRes = res.map((x, index) => {
             x.id = (index + 1) + '';
@@ -47,12 +47,16 @@ module.exports = function (text) {
             delete x['supplierPriceCurrency']
 
             // dynamic supplierPrice and price
-            supplierPriceRules.forEach(y => {
-                if (y.unit === x.unit) {
-                    const rule = y.rule();
+            dynamicPriceRules.forEach(rule => {
+                if (rule.unit === x.unit) {
 
                     // supplierPrice
-                    const supplierPrice = rule.supplierPrice(x);
+                    let supplierPrice;
+                    if (typeof rule.supplierPrice === 'function') {
+                        supplierPrice = rule.supplierPrice(x);
+                    } else {
+                        supplierPrice = rule.supplierPrice;
+                    }
 
                     // price
                     const price = rule.price(x, supplierPrice);
