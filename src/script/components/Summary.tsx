@@ -17,8 +17,8 @@ export class Summary extends React.Component<Props, void> {
         const { columns, purchaseDetailItems } = this.props;
 
         // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += (calcCost(x) * (x.quantity)); return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity)); return s; }, 0);
+        const cost = purchaseDetailItems.reduce((s, x) => { s += x.sumCost; return s; }, 0);
+        const receipt = purchaseDetailItems.reduce((s, x) => { s += x.sumPrice; return s; }, 0);
         const sum = {
             cost,
             receipt,
@@ -62,13 +62,5 @@ export class Summary extends React.Component<Props, void> {
                 </Table>
             </Paper>
         );
-    }
-}
-
-function calcCost(item: PurchaseDetailItem) {
-    if (item.supplierPrice === 0 || item.supplierPrice === undefined) {
-        return item.price / 4;
-    } else {
-        return item.supplierPrice;
     }
 }

@@ -19,8 +19,9 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
     (priceList) => {
         const priceOptions: Option[] = priceList.map(x => {
             return {
-                text: `${x.name} ${x.itemId} ${x.menu}`,
-                value: x.id
+                text: `${x.onSale ? '' : '(新規販売停止) '} ${x.name} ${x.itemId} ${x.menu}`,
+                value: x.id,
+                onSale: x.onSale
             } as Option;
         });
         return priceOptions;
@@ -28,6 +29,8 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
 );
 
 export interface PurchaseDetailItem extends PurchaseItem, Item {
+    sumPrice: number;
+    sumCost: number;
 }
 
 export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailItem[], Item[], PurchaseItem[]>(
@@ -36,8 +39,24 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
         return purchaseItems.map((x, index) => {
             const item = priceList.find(y => y.id === x.id);
 
+            // Calc price, sum
+            let sumPrice;
+            if (item.dynamicPrice) {
+                sumPrice = item.dynamicPrice(item, x.quantity);
+            } else {
+                sumPrice = item.price * (x.quantity || 0);
+            }
+            let sumCost;
+            if (item.supplierPrice === 0) {
+                sumCost = sumPrice / 4;
+            } else {
+                sumCost = item.supplierPrice * (x.quantity || 0);
+            }
+
             return <PurchaseDetailItem>Object.assign({
-                displayId: index + 1
+                displayId: index + 1,
+                sumPrice,
+                sumCost
             }, item, x);
         });
     }
