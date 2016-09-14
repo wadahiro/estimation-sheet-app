@@ -7,7 +7,8 @@ const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
 const includeAction = ReduxUndo.includeAction;
 
-const PRICE_LIST = require('../data/price-list.csv');
+// const PRICE_LIST = require('../data/price-list.csv');
+const PRICE_LIST = require('../data/price.csv');
 
 export interface RootState {
     app: AppStateHistory;
@@ -25,6 +26,7 @@ export interface AppState {
     purchaseItemsColumns: Column[];
 
     priceList: Item[];
+
     searchWord: string;
 
     userData: UserData;
@@ -44,7 +46,8 @@ export interface Option {
     text: string;
     disabled?: boolean;
     static?: boolean;
-    value?: string
+    value?: string;
+    onSale?: boolean;
 }
 
 export interface Item {
@@ -55,10 +58,12 @@ export interface Item {
     unit: string;
     quantity: number;
     price: number;
-    suppliersPrice: number;
+    dynamicPrice?: (self: Item, quantity: number) => number;
+    supplierPrice: number;
+    dynamicSupplierPrice?: (self: Item, quantity: number) => number;
     seller: string;
 
-    cost: number;
+    onSale: boolean;
 }
 
 export interface PurchaseItem {
@@ -113,8 +118,11 @@ function init(): AppState {
     };
 }
 
-function initPriceList(list): Item[] {
+function initPriceList(list: Item[]): Item[] {
     return list.map(x => {
+        if (x.dynamicPrice) {
+            x.dynamicPrice = Function.call(null, 'return ' + x.dynamicPrice)();
+        }
         return x;
     });
 }

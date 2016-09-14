@@ -15,6 +15,8 @@ require('react-input-enhancements');
 require('redux-undo');
 
 require('react-tap-event-plugin');
+require('material-ui/styles/MuiThemeProvider');
+require('material-ui/styles/getMuiTheme');
 require('material-ui/AppBar');
 require('material-ui/Drawer');
 require('material-ui/IconButton');

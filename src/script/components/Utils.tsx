@@ -3,11 +3,11 @@ import { RootState } from '../reducers';
 const moment = require('moment');
 
 export function toYen(price: number = 0): string {
-    return `${String(price).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')} 円`;
+    return `${String(floor(price, 3)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')} 円`;
 }
 
 export function toPercentage(rate: number): string {
-    return `${Math.floor(rate * 100)} %`;
+    return `${floor(rate * 100, 2)} %`;
 }
 
 export function format(type: 'yen' | 'rate', value: string | number): string {
@@ -19,6 +19,21 @@ export function format(type: 'yen' | 'rate', value: string | number): string {
         default:
             return value as string;
     }
+}
+
+export function floor(num: number, n: number) {
+    const pow = Math.pow(10, n);
+    return Math.floor(num * pow) / pow;
+}
+
+export function ceil(num: number, n: number) {
+    const pow = Math.pow(10, n);
+    return Math.ceil(num * pow) / pow;
+}
+
+export function round(num: number, n: number) {
+    const pow = Math.pow(10, n);
+    return Math.round(num * pow) / pow;
 }
 
 export function save(rootState: RootState) {

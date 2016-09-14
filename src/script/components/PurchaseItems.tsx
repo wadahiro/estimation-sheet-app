@@ -51,10 +51,9 @@ export class PurchaseItems extends React.Component<Props, void> {
 
     renderPrice = (item: PurchaseDetailItem) => {
         if (item.quantity > 1) {
-            const sum = item.price * item.quantity;
-            return <span>{toYen(sum)}<br /><span style={{ fontSize: 10 }}>(単価: {toYen(item.price)})</span></span>;
+            return <span>{toYen(item.sumPrice)}<br /><span style={{ fontSize: 10 }}>(単価: {toYen(item.price)})</span></span>;
         } else {
-            return <span>{toYen(item.price)}</span>;
+            return <span>{toYen(item.sumPrice)}</span>;
         }
     };
 
@@ -62,8 +61,8 @@ export class PurchaseItems extends React.Component<Props, void> {
         const { columns, purchaseDetailItems } = this.props;
 
         // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += (x.cost * (x.quantity || 0)); return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity || 0)); return s; }, 0);
+        const cost = purchaseDetailItems.reduce((s, x) => { s += x.sumCost; return s; }, 0);
+        const receipt = purchaseDetailItems.reduce((s, x) => { s += x.sumPrice; return s; }, 0);
         const sum = {
             cost,
             receipt,

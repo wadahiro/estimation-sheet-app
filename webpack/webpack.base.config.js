@@ -10,13 +10,19 @@ var userSettings = require('../buildSettings');
 var NODE_ENV = process.env.NODE_ENV;
 NODE_ENV = NODE_ENV && NODE_ENV.trim() === 'production' ? 'production' : 'development';
 
+function replacer(k, v) {
+    if (typeof v === 'function') { 
+        return v.toString();
+    }
+    return v;
+}
 
 function makeConfig(settings) {
   var sellerSettings = settings.sellers.map(x => {
     return Object.assign({}, settings.default, x);
   });
   var defaultSetting = Object.assign({}, settings.default, { name: 'default' });
-  var configs = [settings.default].concat(sellerSettings);
+  var configs = [defaultSetting].concat(sellerSettings);
   return configs.map(x => {
 
     return {
@@ -98,7 +104,8 @@ function makeConfig(settings) {
           'process.env.SELLER': '"' + x.name + '"',
           'process.env.ESTIMATION_METADATA': JSON.stringify(x.estimationMetadata),
           'process.env.SUMMARY_COLUMNS': JSON.stringify(x.summaryColumns),
-          'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(x.purchaseItemsColumns)
+          'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(x.purchaseItemsColumns),
+          'process.env.PRICE_RULES': JSON.stringify(x.priceRules, replacer)
         }),
         new HtmlWebpackPlugin({
           inject: NODE_ENV === 'production' ? false : true,
