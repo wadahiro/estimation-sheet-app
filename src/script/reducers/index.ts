@@ -69,7 +69,7 @@ export interface Item {
 }
 
 export interface PurchaseItem {
-    id: string;
+    itemId: string;
     quantity: number;
 }
 
@@ -99,8 +99,8 @@ export interface ExchangeRate {
 // for test server
 if (process.env.NODE_ENV !== 'production') {
     window['SAVED_HISTORY'] = [
-        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ id: '1', quantity: 20 }] },
-        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ id: '20', quantity: 5 }, { id: '49', quantity: 8 }] }
+        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ itemId: 'OSS-FREX-IDEG-001', quantity: 20 }] },
+        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ itemId: 'OSS-LDAP-1ND-001', quantity: 5 }, { itemId: 'OSS-FRIN-AUTE-001', quantity: 2000 }] }
     ];
 }
 
@@ -150,14 +150,14 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             });
 
         case 'ADD_ITEM':
-            const item = state.priceList.find(x => x.id === action.payload.id);
+            const item = state.priceList.find(x => x.itemId === action.payload.itemId);
             if (item) {
                 return Object.assign({}, state, {
                     searchWord: null,
                     userData: Object.assign({}, state.userData, {
                         date: now(),
                         purchaseItems: state.userData.purchaseItems.concat({
-                            id: item.id,
+                            itemId: item.itemId,
                             quantity: 1
                         })
                     })
@@ -166,12 +166,12 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             return state;
 
         case 'DELETE_ITEM':
-            const deleteItem = state.userData.purchaseItems.find(x => x.id === action.payload.id);
+            const deleteItem = state.userData.purchaseItems.find(x => x.itemId === action.payload.itemId);
             if (deleteItem) {
                 return Object.assign({}, state, {
                     userData: Object.assign({}, state.userData, {
                         date: now(),
-                        purchaseItems: state.userData.purchaseItems.filter(x => x.id !== deleteItem.id)
+                        purchaseItems: state.userData.purchaseItems.filter(x => x.itemId !== deleteItem.itemId)
                     })
                 });
             }
@@ -182,7 +182,7 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 userData: Object.assign({}, state.userData, {
                     date: now(),
                     purchaseItems: state.userData.purchaseItems.map(x => {
-                        if (x.id === action.payload.id) {
+                        if (x.itemId === action.payload.itemId) {
                             return Object.assign({}, x, {
                                 quantity: action.payload.quantity
                             });

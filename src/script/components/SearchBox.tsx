@@ -18,7 +18,7 @@ const optionFilters = [
 interface Props {
     value: string;
     options: Option[];
-    onValueChange: (id: string) => void;
+    onValueChange: (itemId: string) => void;
     onChangeSearchWord: (word: string) => void;
 }
 
@@ -27,9 +27,9 @@ export class SearchBox extends React.Component<Props, void> {
         this.props.onChangeSearchWord(e.target.value);
     };
 
-    handleValueChange = (id: string) => {
+    handleValueChange = (itemId: string) => {
         setTimeout(() => {
-            this.props.onValueChange(id);
+            this.props.onValueChange(itemId);
         });
     };
 

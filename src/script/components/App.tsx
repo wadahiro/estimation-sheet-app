@@ -54,20 +54,20 @@ class App extends React.Component<Props, State> {
         showDrawer: false
     };
 
-    addItem = (id: string) => {
-        this.props.dispatch(Actions.addItem(id));
+    addItem = (itemId: string) => {
+        this.props.dispatch(Actions.addItem(itemId));
     };
 
     searchItem = (searchWord: string) => {
         this.props.dispatch(Actions.searchItem(searchWord));
     };
 
-    changeQuantity = (id: string, newQuantity: number) => {
-        this.props.dispatch(Actions.modifyQuantity(id, newQuantity));
+    changeQuantity = (itemId: string, newQuantity: number) => {
+        this.props.dispatch(Actions.modifyQuantity(itemId, newQuantity));
     };
 
-    deleteItem = (id: string) => {
-        this.props.dispatch(Actions.deleteItem(id));
+    deleteItem = (itemId: string) => {
+        this.props.dispatch(Actions.deleteItem(itemId));
     };
 
     changeExchangeRate = (type: CurrencyType, rate: number) => {
@@ -165,13 +165,13 @@ class App extends React.Component<Props, State> {
 
                 <Grid className={style.grid}>
                     <Row className={style.row}>
-                        <Col xs={6}>
+                        <Col xs={5}>
                             <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} />
                         </Col>
                         <Col xs={2}>
                             <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate} />
                         </Col>
-                        <Col xs={4}>
+                        <Col xs={5}>
                             <Summary columns={summaryColumns}
                                 purchaseDetailItems={purchaseDetailItems}
                                 exchangeRate={userData.exchangeRate} />
@@ -199,6 +199,7 @@ class App extends React.Component<Props, State> {
                             />
                     </Row>
                 </Grid>
+
                 {this.state.showSaveDialog &&
                     <SaveDialog columns={estimationMetadataColumns} value={userData.estimationMetadata} onChange={this.changeMetadata} onSave={this.save} onClose={this.closeSaveDialog} />
                 }

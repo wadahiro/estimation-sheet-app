@@ -32,14 +32,14 @@ export function searchItem(searchWord: string): SearchItem {
 export interface AddItem extends Action {
     type: 'ADD_ITEM';
     payload: {
-        id: string;
+        itemId: string;
     }
 }
-export function addItem(id: string): AddItem {
+export function addItem(itemId: string): AddItem {
     return {
         type: 'ADD_ITEM',
         payload: {
-            id
+            itemId
         }
     };
 }
@@ -47,14 +47,14 @@ export function addItem(id: string): AddItem {
 export interface DeleteItem extends Action {
     type: 'DELETE_ITEM';
     payload: {
-        id: string;
+        itemId: string;
     }
 }
-export function deleteItem(id: string): DeleteItem {
+export function deleteItem(itemId: string): DeleteItem {
     return {
         type: 'DELETE_ITEM',
         payload: {
-            id
+            itemId
         }
     };
 }
@@ -62,15 +62,15 @@ export function deleteItem(id: string): DeleteItem {
 export interface ModifyQuantity extends Action {
     type: 'MOD_QUANTITY';
     payload: {
-        id: string;
+        itemId: string;
         quantity: number;
     };
 }
-export function modifyQuantity(id: string, quantity: number): ModifyQuantity {
+export function modifyQuantity(itemId: string, quantity: number): ModifyQuantity {
     return {
         type: 'MOD_QUANTITY',
         payload: {
-            id,
+            itemId,
             quantity
         }
     };

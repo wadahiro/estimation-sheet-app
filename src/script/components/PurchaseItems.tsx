@@ -15,8 +15,8 @@ const style = require('./style.css');
 interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
-    onChangeQuantity: (id: string, newQuantity: number) => void;
-    onDeleteItem: (id: string) => void;
+    onChangeQuantity: (itemId: string, newQuantity: number) => void;
+    onDeleteItem: (itemId: string) => void;
     exchangeRate: ExchangeRate[];
 }
 
@@ -38,17 +38,17 @@ export class PurchaseItems extends React.Component<Props, void> {
             return;
         }
 
-        this.props.onChangeQuantity(item.id, quantity);
+        this.props.onChangeQuantity(item.itemId, quantity);
     };
 
     renderAction = (item: PurchaseDetailItem) => {
-        return <IconButton onClick={this.deleteItem(item.id)}>
+        return <IconButton onClick={this.deleteItem(item.itemId)}>
             <Delete />
         </IconButton>;
     };
 
-    deleteItem = (id: string) => (e) => {
-        this.props.onDeleteItem(id);
+    deleteItem = (itemId: string) => (e) => {
+        this.props.onDeleteItem(itemId);
     };
 
     renderQuantity = (item: PurchaseDetailItem) => {

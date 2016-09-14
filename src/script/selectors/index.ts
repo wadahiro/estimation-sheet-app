@@ -9,8 +9,8 @@ const getPresentAppState = (state: RootState) => state.app.present;
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
     getPriceList, getPurchaseItems,
     (priceList, purchaseItems) => {
-        const addedIds = purchaseItems.map(x => x.id);
-        return priceList.filter(x => !addedIds.find(y => x.id === y));
+        const addedItemIds = purchaseItems.map(x => x.itemId);
+        return priceList.filter(x => !addedItemIds.find(y => x.itemId === y));
     }
 );
 
@@ -19,8 +19,8 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
     (priceList) => {
         const priceOptions: Option[] = priceList.map(x => {
             return {
-                text: `${x.onSale ? '' : '(新規販売停止) '} ${x.name} ${x.itemId} ${x.menu}`,
-                value: x.id,
+                text: `${x.onSale ? '' : '(新規販売停止) '} ${x.name} ${x.itemId} ${x.menu} ${x.unit}`,
+                value: x.itemId,
                 onSale: x.onSale
             } as Option;
         });
@@ -37,7 +37,7 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
     getPriceList, getPurchaseItems,
     (priceList, purchaseItems) => {
         return purchaseItems.map((x, index) => {
-            const item = priceList.find(y => y.id === x.id);
+            const item = priceList.find(y => y.itemId === x.itemId);
 
             // Calc price
             let sumPrice: Currency = {
