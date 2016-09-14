@@ -105,7 +105,7 @@ function makeConfig(settings) {
           'process.env.ESTIMATION_METADATA': JSON.stringify(x.estimationMetadata),
           'process.env.SUMMARY_COLUMNS': JSON.stringify(x.summaryColumns),
           'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(x.purchaseItemsColumns),
-          'process.env.PRICE_RULES': JSON.stringify(x.priceRules, replacer)
+          'process.env.EXCHANGE_RATE': JSON.stringify(settings.exchangeRate)
         }),
         new HtmlWebpackPlugin({
           inject: NODE_ENV === 'production' ? false : true,

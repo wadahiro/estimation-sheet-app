@@ -10,11 +10,12 @@ import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData, Option } from '../reducers';
+import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
 import { EstimationMetadata } from './EstimationMetadata';
 import { Summary } from './Summary';
+import { ExchangeRateBox } from './ExchangeRateBox';
 import { PurchaseItems } from './PurchaseItems';
 import { HistoryMenu } from './HistoryMenu';
 import { SaveDialog } from './SaveDialog';
@@ -67,6 +68,10 @@ class App extends React.Component<Props, State> {
 
     deleteItem = (id: string) => {
         this.props.dispatch(Actions.deleteItem(id));
+    };
+
+    changeExchangeRate = (type: CurrencyType, rate: number) => {
+        this.props.dispatch(Actions.modifyExchangeRate(type, rate));
     };
 
     openDrawer = (e) => {
@@ -163,8 +168,13 @@ class App extends React.Component<Props, State> {
                         <Col xs={6}>
                             <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} />
                         </Col>
-                        <Col xs={6}>
-                            <Summary columns={summaryColumns} purchaseDetailItems={purchaseDetailItems} />
+                        <Col xs={2}>
+                            <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate} />
+                        </Col>
+                        <Col xs={4}>
+                            <Summary columns={summaryColumns}
+                                purchaseDetailItems={purchaseDetailItems}
+                                exchangeRate={userData.exchangeRate} />
                         </Col>
                     </Row>
                 </Grid>
@@ -185,6 +195,7 @@ class App extends React.Component<Props, State> {
                             purchaseDetailItems={purchaseDetailItems}
                             onChangeQuantity={this.changeQuantity}
                             onDeleteItem={this.deleteItem}
+                            exchangeRate={userData.exchangeRate}
                             />
                     </Row>
                 </Grid>

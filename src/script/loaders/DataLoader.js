@@ -21,8 +21,6 @@ module.exports = function (text) {
 
         const resolvedRes = res.map((x, index) => {
             x.id = index + '';
-            x.price = Number(x.price);
-            x.supplierPrice = Number(x.supplierPrice);
             x.onSale = x.onSale.toLowerCase() === 'true';
 
             // discount
@@ -32,7 +30,21 @@ module.exports = function (text) {
                     discountRate = x[`seller_${seller}`];
                 }
             }
-            x.price = applyDiscount(discountRate, x.price);
+
+            // price
+            const price = Number(x.price);
+            x.price = {
+                type: 'JPY',
+                value: applyDiscount(discountRate, price)
+            };
+
+            // supplierPrice
+            const supplierPrice = Number(x.supplierPrice);
+            x.supplierPrice = {
+                type: x.supplierPriceCurrency,
+                value: supplierPrice
+            };
+            delete x['supplierPriceCurrency']
 
             // dynamic supplierPrice and price
             supplierPriceRules.forEach(y => {

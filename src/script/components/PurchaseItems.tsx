@@ -4,10 +4,11 @@ import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import TextField from 'material-ui/TextField';
 import IconButton from 'material-ui/IconButton';
+import Delete from 'material-ui/svg-icons/action/delete';
 
 import { PurchaseDetailItem } from '../selectors';
-import { RootState, Column } from '../reducers';
-import { format, toYen, toPercentage } from './Utils';
+import { RootState, Column, ExchangeRate } from '../reducers';
+import { format, formatCurrency, exchangeCurrency } from './Utils';
 
 const style = require('./style.css');
 
@@ -16,6 +17,7 @@ interface Props {
     purchaseDetailItems?: PurchaseDetailItem[];
     onChangeQuantity: (id: string, newQuantity: number) => void;
     onDeleteItem: (id: string) => void;
+    exchangeRate: ExchangeRate[];
 }
 
 export class PurchaseItems extends React.Component<Props, void> {
@@ -25,8 +27,14 @@ export class PurchaseItems extends React.Component<Props, void> {
             return String.fromCharCode(str.charCodeAt(0) - 0xFEE0);
         });
 
-        const quantity = Number(value);
-        if (isNaN(quantity) || e.target.value === '') {
+        let quantity;
+        if (e.target.value === '') {
+            quantity = 0;
+        } else {
+            quantity = Number(value);
+        }
+
+        if (Number.isNaN(quantity)) {
             return;
         }
 
@@ -34,7 +42,9 @@ export class PurchaseItems extends React.Component<Props, void> {
     };
 
     renderAction = (item: PurchaseDetailItem) => {
-        return <IconButton iconClassName='muidocs-icon-delete' onClick={this.deleteItem(item.id)} />;
+        return <IconButton onClick={this.deleteItem(item.id)}>
+            <Delete />
+        </IconButton>;
     };
 
     deleteItem = (id: string) => (e) => {
@@ -51,23 +61,22 @@ export class PurchaseItems extends React.Component<Props, void> {
 
     renderPrice = (item: PurchaseDetailItem) => {
         if (item.quantity > 1) {
-            return <span>{toYen(item.sumPrice)}<br /><span style={{ fontSize: 10 }}>(単価: {toYen(item.price)})</span></span>;
+            return <span>{formatCurrency(item.sumPrice.type, item.sumPrice.value)}<br /><span style={{ fontSize: 10 }}>(単価: {formatCurrency(item.price.type, item.price.value)})</span></span>;
         } else {
-            return <span>{toYen(item.sumPrice)}</span>;
+            return <span>{formatCurrency(item.sumPrice.type, item.sumPrice.value)}</span>;
         }
     };
 
-    render() {
-        const { columns, purchaseDetailItems } = this.props;
+    renderMultiValues(value: string[]) {
+        return (
+            <span>
+                {value.map(x => <div>{x}</div>)}
+            </span>
+        );
+    }
 
-        // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += x.sumCost; return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += x.sumPrice; return s; }, 0);
-        const sum = {
-            cost,
-            receipt,
-            profitRate: (receipt - cost) / receipt
-        }
+    render() {
+        const { columns, purchaseDetailItems, exchangeRate } = this.props;
 
         const idColStyle = {
             width: 50
@@ -107,7 +116,13 @@ export class PurchaseItems extends React.Component<Props, void> {
                                 <TableRow key={x.id} selectable={false}>
                                     <TableRowColumn style={idColStyle}>{x.id}</TableRowColumn>
                                     {columns.map(y => {
-                                        const value = format(y.type, x[y.name]);
+                                        const value = format(y.type, x[y.name], exchangeRate);
+
+                                        if (Array.isArray(value)) {
+                                            return (
+                                                <TableRowColumn key={y.name} style={columnStyle}>{this.renderMultiValues(value)}</TableRowColumn>
+                                            );
+                                        }
 
                                         return (
                                             <TableRowColumn key={y.name} style={columnStyle}>{value}</TableRowColumn>

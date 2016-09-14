@@ -104,11 +104,3 @@ export class SaveDialog extends React.Component<Props, void> {
         });
     }
 }
-
-function calcCost(item: PurchaseDetailItem) {
-    if (item.supplierPrice === 0) {
-        return item.price / 4;
-    } else {
-        return item.supplierPrice;
-    }
-}

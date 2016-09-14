@@ -1,4 +1,7 @@
 import { Action } from 'redux';
+
+import { CurrencyType } from '../reducers';
+
 const { ActionCreators } = require('redux-undo');
 
 export type Actions =
@@ -7,7 +10,8 @@ export type Actions =
     DeleteItem |
     ModifyQuantity |
     RestoreSavedHistory |
-    ModifyMetadata
+    ModifyMetadata |
+    ModifyExchangeRate
     ;
 
 export interface SearchItem extends Action {
@@ -100,6 +104,23 @@ export function modifyMetadata(name: string, value: string): ModifyMetadata {
         payload: {
             name,
             value
+        }
+    };
+}
+
+export interface ModifyExchangeRate extends Action {
+    type: 'MOD_EXCHANGE_RATE';
+    payload: {
+        type: CurrencyType,
+        rate: number;
+    };
+}
+export function modifyExchangeRate(type: CurrencyType, rate: number): ModifyExchangeRate {
+    return {
+        type: 'MOD_EXCHANGE_RATE',
+        payload: {
+            type,
+            rate
         }
     };
 }

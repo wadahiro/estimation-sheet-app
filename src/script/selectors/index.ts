@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect';
-import { RootState, AppState, Item, PurchaseItem, UserData, Option } from '../reducers';
+import { RootState, AppState, Item, PurchaseItem, UserData, Option, Currency } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
-const getDollarExchangeRate = (state: RootState) => state.app.present.userData.dollarExchangeRate;
+const getExchangeRate = (state: RootState) => state.app.present.userData.exchangeRate;
 const getPresentAppState = (state: RootState) => state.app.present;
 
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
@@ -29,8 +29,8 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
 );
 
 export interface PurchaseDetailItem extends PurchaseItem, Item {
-    sumPrice: number;
-    sumCost: number;
+    sumPrice: Currency;
+    sumCost: Currency;
 }
 
 export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailItem[], Item[], PurchaseItem[]>(
@@ -40,17 +40,23 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
             const item = priceList.find(y => y.id === x.id);
 
             // Calc price, sum
-            let sumPrice;
+            let sumPrice: Currency = {
+                type: item.price.type,
+                value: 0
+            };
             if (item.dynamicPrice) {
                 sumPrice = item.dynamicPrice(item, x.quantity);
             } else {
-                sumPrice = item.price * (x.quantity || 0);
+                sumPrice.value = item.price.value * (x.quantity || 0);
             }
-            let sumCost;
-            if (item.supplierPrice === 0) {
-                sumCost = sumPrice / 4;
+            let sumCost: Currency = {
+                type: item.supplierPrice.type,
+                value: 0
+            };
+            if (item.supplierPrice.value === 0) {
+                sumCost.value = sumPrice.value / 4;
             } else {
-                sumCost = item.supplierPrice * (x.quantity || 0);
+                sumCost.value = item.supplierPrice.value * (x.quantity || 0);
             }
 
             return <PurchaseDetailItem>Object.assign({

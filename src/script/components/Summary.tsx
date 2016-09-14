@@ -4,29 +4,29 @@ import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
 import { PurchaseDetailItem } from '../selectors';
-import { RootState, Column } from '../reducers';
-import { format } from './Utils';
+import { RootState, Column, ExchangeRate, Currency } from '../reducers';
+import { format, exchangeCurrency } from './Utils';
 
 interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
+    exchangeRate: ExchangeRate[];
 }
 
 export class Summary extends React.Component<Props, void> {
     render() {
-        const { columns, purchaseDetailItems } = this.props;
+        const { columns, purchaseDetailItems, exchangeRate } = this.props;
 
         // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += x.sumCost; return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += x.sumPrice; return s; }, 0);
+        const cost: Currency = purchaseDetailItems.reduce((s, x) => { s.value += exchangeCurrency(exchangeRate, x.sumCost); return s; }, { type: 'JPY', value: 0 } as Currency);
+        const receipt = purchaseDetailItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.sumPrice); return s; }, 0);
         const sum = {
             cost,
             receipt,
-            profitRate: (receipt - cost) / receipt
+            profitRate: (receipt - cost.value) / receipt
         }
 
         const columnStyle = {
-            height: 20,
             whiteSpace: 'normal'
         };
 
@@ -50,7 +50,7 @@ export class Summary extends React.Component<Props, void> {
                     <TableBody displayRowCheckbox={false}>
                         <TableRow >
                             {columns.map(x => {
-                                const value = format(x.type, sum[x.name]);
+                                const value = format(x.type, sum[x.name], exchangeRate);
                                 return (
                                     <TableRowColumn key={x.name} style={columnStyle}>
                                         {value}

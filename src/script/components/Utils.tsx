@@ -1,4 +1,4 @@
-import { RootState } from '../reducers';
+import { RootState, CurrencyType, ExchangeRate, Currency } from '../reducers';
 
 const moment = require('moment');
 
@@ -10,11 +10,55 @@ export function toPercentage(rate: number): string {
     return `${floor(rate * 100, 2)} %`;
 }
 
-export function format(type: 'yen' | 'rate', value: string | number): string {
+export function formatCurrency(type: CurrencyType, value: number): string {
+    const currency = String(floor(value, 3)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+
+    // FIXME
     switch (type) {
-        case 'yen':
-            return toYen(value as number);
-        case 'rate':
+        case 'JPY':
+            return `${currency} 円`;
+
+        case 'USD':
+            return `$ ${currency}`;
+
+        default:
+            return 'Uknown';
+    }
+}
+
+export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency): number {
+    const target = exchangeRate.find(x => x.type === currency.type);
+    if (!target) {
+        return currency.value;
+    }
+    return target.rate * currency.value;
+}
+
+function isCurrency(value: any): value is Currency {
+    return value && typeof value.type === 'string' && typeof value.value === 'number';
+}
+
+export function format(type: 'currency' | 'percentage', value: string | number | Currency, exchangeRate: ExchangeRate[]): string | string[] {
+
+    switch (type) {
+        case 'currency':
+            let resolvedValue: string | string[];
+            if (isCurrency(value)) {
+                resolvedValue = formatCurrency(value.type, value.value);
+
+                // TODO parameterize 'JPY'
+                if (value.type !== 'JPY') {
+                    const mainCurrency = exchangeCurrency(exchangeRate, value);
+                    const mainCurrencyFormatted = formatCurrency('JPY', mainCurrency);
+
+                    resolvedValue = [mainCurrencyFormatted, resolvedValue];
+                }
+                return resolvedValue;
+            } else {
+                return formatCurrency('JPY', Number(value));
+            }
+
+        case 'percentage':
             return toPercentage(value as number);
         default:
             return value as string;

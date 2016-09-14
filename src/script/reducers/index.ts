@@ -36,7 +36,7 @@ export interface AppState {
 export interface Column {
     name: string;
     label: string;
-    type?: 'yen' | 'rate';
+    type?: 'currency' | 'percentage';
     required?: boolean;
     options?: Option[]
 }
@@ -50,6 +50,8 @@ export interface Option {
     onSale?: boolean;
 }
 
+export type CurrencyType = 'JPY' | 'USD';
+
 export interface Item {
     id: string;
     itemId: string;
@@ -57,10 +59,10 @@ export interface Item {
     menu: string;
     unit: string;
     quantity: number;
-    price: number;
-    dynamicPrice?: (self: Item, quantity: number) => number;
-    supplierPrice: number;
-    dynamicSupplierPrice?: (self: Item, quantity: number) => number;
+    price: Currency;
+    dynamicPrice?: (self: Item, quantity: number) => Currency;
+    supplierPrice: Currency;
+    dynamicSupplierPrice?: (self: Item, quantity: number) => Currency;
     seller: string;
 
     onSale: boolean;
@@ -80,15 +82,25 @@ export interface UserData {
     estimationMetadata: {
         [index: string]: string;
     };
-    dollarExchangeRate: number;
+    exchangeRate: ExchangeRate[];
     purchaseItems: PurchaseItem[];
+}
+
+export interface Currency {
+    type: CurrencyType;
+    value: number;
+}
+
+export interface ExchangeRate {
+    type: CurrencyType;
+    rate: number;
 }
 
 // for test server
 if (process.env.NODE_ENV !== 'production') {
     window['SAVED_HISTORY'] = [
-        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, dollarExchangeRate: 120, purchaseItems: [{ id: '1', quantity: 20 }] },
-        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, dollarExchangeRate: 100, purchaseItems: [{ id: '20', quantity: 5 }, { id: '49', quantity: 8 }] }
+        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ id: '1', quantity: 20 }] },
+        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ id: '20', quantity: 5 }, { id: '49', quantity: 8 }] }
     ];
 }
 
@@ -96,7 +108,7 @@ function init(): AppState {
     let userData: UserData = {
         date: '',
         estimationMetadata: {},
-        dollarExchangeRate: 120,
+        exchangeRate: process.env.EXCHANGE_RATE,
         purchaseItems: []
     };
 
@@ -177,6 +189,21 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 })
             });
 
+        case 'MOD_EXCHANGE_RATE':
+            return Object.assign({}, state, {
+                userData: Object.assign({}, state.userData, {
+                    date: now(),
+                    exchangeRate: state.userData.exchangeRate.map(x => {
+                        if (x.type === action.payload.type) {
+                            return Object.assign({}, x, {
+                                rate: action.payload.rate
+                            });
+                        }
+                        return x;
+                    })
+                })
+            });
+
         case 'RESTORE_SAVED_HISTORY':
             const restoredIndex = state.savedHistory.findIndex(x => x.date === action.payload.date);
 
@@ -187,6 +214,7 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
         case 'MOD_METADATA':
             return Object.assign({}, state, {
                 userData: Object.assign({}, state.userData, {
+                    date: now(),
                     estimationMetadata: Object.assign({}, state.userData.estimationMetadata, {
                         [action.payload.name]: action.payload.value
                     })
@@ -199,6 +227,6 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
 export default combineReducers({
     app: undoable(appStateReducer, {
-        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'RESTORE_SAVED_HISTORY'])
+        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'MOD_EXCHANGE_RATE', 'RESTORE_SAVED_HISTORY'])
     }),
 });
