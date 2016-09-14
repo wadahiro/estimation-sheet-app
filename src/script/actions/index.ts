@@ -94,15 +94,15 @@ export function restoreSavedHistory(date: string): RestoreSavedHistory {
 export interface ModifyMetadata extends Action {
     type: 'MOD_METADATA';
     payload: {
-        name: string;
-        value: string;
+        value: {
+            [index: string]: string
+        };
     };
 }
-export function modifyMetadata(name: string, value: string): ModifyMetadata {
+export function modifyMetadata(value: { [index: string]: string }): ModifyMetadata {
     return {
         type: 'MOD_METADATA',
         payload: {
-            name,
             value
         }
     };

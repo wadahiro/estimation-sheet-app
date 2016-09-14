@@ -106,6 +106,9 @@ export function save(rootState: RootState) {
     html += after;
     html += decodeURI('%3C/html%3E');
 
+    // replace body
+    html = html.replace(/<div id="app">.*<\/div>/, '<div id="app"><\/div>'); 
+
     const blob = new Blob([html]);
     if (window.navigator.msSaveBlob) {
         window.navigator.msSaveBlob(blob, title + '.html');

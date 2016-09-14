@@ -5,7 +5,7 @@ import { createSelector } from 'reselect';
 
 import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';
-import FileDownload from 'material-ui/svg-icons/file/file-download';
+import Info from 'material-ui/svg-icons/action/info';
 import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
@@ -19,7 +19,7 @@ import { ExchangeRateBox } from './ExchangeRateBox';
 import { PurchaseItems } from './PurchaseItems';
 import { CostItems } from './CostItems';
 import { HistoryMenu } from './HistoryMenu';
-import { SaveDialog } from './SaveDialog';
+import { EditEstimationMetadataDialog } from './EditEstimationMetadataDialog';
 import { save } from './Utils';
 
 const style = require('./style.css');
@@ -46,13 +46,13 @@ interface Props {
 }
 
 interface State {
-    showSaveDialog?: boolean;
+    showDialog?: boolean;
     showDrawer?: boolean;
 }
 
 class App extends React.Component<Props, State> {
     state = {
-        showSaveDialog: false,
+        showDialog: false,
         showDrawer: false
     };
 
@@ -83,16 +83,16 @@ class App extends React.Component<Props, State> {
         });
     };
 
-    openSaveDialog = (e) => {
+    openDialog = (e) => {
         e.preventDefault();
         this.setState({
-            showSaveDialog: true
+            showDialog: true
         });
     };
 
-    closeSaveDialog = () => {
+    closeDialog = () => {
         this.setState({
-            showSaveDialog: false
+            showDialog: false
         });
     };
 
@@ -107,8 +107,8 @@ class App extends React.Component<Props, State> {
         });
     };
 
-    changeMetadata = (name: string, value: string) => {
-        this.props.dispatch(Actions.modifyMetadata(name, value));
+    changeMetadata = (value: { [index: string]: string }) => {
+        this.props.dispatch(Actions.modifyMetadata(value));
     };
 
     handleKeydown = (e) => {
@@ -123,11 +123,8 @@ class App extends React.Component<Props, State> {
 
         } else if (evtobj.keyCode === 83 && evtobj.ctrlKey) {
             evtobj.preventDefault();
-            if (this.state.showSaveDialog) {
-                this.closeSaveDialog();
+            if (!this.state.showDialog) {
                 this.save();
-            } else {
-                this.openSaveDialog(e);
             }
         }
     };
@@ -159,7 +156,7 @@ class App extends React.Component<Props, State> {
             <div>
                 <NavBar userData={userData}
                     onClickMenu={this.openDrawer}
-                    onClickSave={this.openSaveDialog}
+                    onClickSave={this.save}
                     editing={editing} />
 
                 <Drawer open={this.state.showDrawer}
@@ -172,6 +169,8 @@ class App extends React.Component<Props, State> {
                 <Grid className={style.grid}>
                     <Row className={style.row}>
                         <h4 style={sectionTitleStyle}>見積もり情報</h4>
+                        &nbsp;
+                        <Info onClick={this.openDialog} />
                     </Row>
                     <Row className={style.row}>
                         <Col xs={6}>
@@ -227,8 +226,8 @@ class App extends React.Component<Props, State> {
                     }
                 </Grid>
 
-                {this.state.showSaveDialog &&
-                    <SaveDialog columns={estimationMetadataColumns} value={userData.estimationMetadata} onChange={this.changeMetadata} onSave={this.save} onClose={this.closeSaveDialog} />
+                {this.state.showDialog &&
+                    <EditEstimationMetadataDialog columns={estimationMetadataColumns} defaultValue={userData.estimationMetadata} onSave={this.changeMetadata} onClose={this.closeDialog} />
                 }
             </div >
         );

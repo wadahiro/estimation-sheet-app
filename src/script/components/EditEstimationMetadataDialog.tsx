@@ -12,18 +12,27 @@ const { Combobox } = require('react-input-enhancements');
 
 interface Props {
     columns: Column[];
-    value: {
-        [index: string]: string;
-    };
-    onChange: (name: string, value: string) => void;
-    onSave: () => void;
+    defaultValue: Metadata;
+    onSave: (data: Metadata) => void;
     onClose: () => void;
 }
 
-export class SaveDialog extends React.Component<Props, void> {
+interface Metadata {
+    [index: string]: string;
+}
+
+interface State {
+    value: Metadata;
+}
+
+export class EditEstimationMetadataDialog extends React.Component<Props, State> {
+    state = {
+        value: this.props.defaultValue
+    };
+
     handleSave = () => {
         this.props.onClose();
-        this.props.onSave();
+        this.props.onSave(this.state.value);
     };
 
     handleClose = () => {
@@ -31,11 +40,19 @@ export class SaveDialog extends React.Component<Props, void> {
     };
 
     handleChange = (name: string) => (e) => {
-        this.props.onChange(name, e.target.value);
+        this.setState({
+            value: Object.assign({}, this.state.value, {
+                [name]: e.target.value
+            })
+        });
     };
 
     handleValueChange = (name: string) => (value: string) => {
-        this.props.onChange(name, value);
+        this.setState({
+            value: Object.assign({}, this.state.value, {
+                [name]: value
+            })
+        });
     };
 
     render() {
@@ -46,16 +63,16 @@ export class SaveDialog extends React.Component<Props, void> {
                 onTouchTap={this.handleClose}
                 />,
             <FlatButton
-                label='保存'
+                label='設定'
                 primary={true}
                 keyboardFocused={true}
                 onTouchTap={this.handleSave}
-                />,
+                />
         ];
 
         return (
             <Dialog open={true}
-                title='概算見積もりの保存'
+                title='見積もり情報の編集'
                 actions={actions}
                 onRequestClose={this.handleClose}
                 autoScrollBodyContent={true}
@@ -66,7 +83,9 @@ export class SaveDialog extends React.Component<Props, void> {
     }
 
     renderColumns() {
-        const { columns, value } = this.props;
+        const { columns } = this.props;
+        const { value } = this.state;
+
         const style = {
 
         }

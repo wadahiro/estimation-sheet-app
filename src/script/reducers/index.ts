@@ -256,9 +256,7 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             return Object.assign({}, state, {
                 userData: Object.assign({}, state.userData, {
                     date: now(),
-                    estimationMetadata: Object.assign({}, state.userData.estimationMetadata, {
-                        [action.payload.name]: action.payload.value
-                    })
+                    estimationMetadata: Object.assign({}, action.payload.value)
                 })
             });
     }
