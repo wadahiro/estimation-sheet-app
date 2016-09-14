@@ -69,7 +69,8 @@ export interface Item {
 }
 
 export interface PurchaseItem {
-    itemId: string;
+    orderId: string;
+    itemId: string; // primary key
     quantity: number;
 }
 
@@ -99,8 +100,8 @@ export interface ExchangeRate {
 // for test server
 if (process.env.NODE_ENV !== 'production') {
     window['SAVED_HISTORY'] = [
-        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ itemId: 'OSS-FREX-IDEG-001', quantity: 20 }] },
-        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ itemId: 'OSS-LDAP-1ND-001', quantity: 5 }, { itemId: 'OSS-FRIN-AUTE-001', quantity: 2000 }] }
+        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ orderId: 376, itemId: 'OSS-FREX-IDEG-001', quantity: 20 }] },
+        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ orderId: 254, itemId: 'OSS-LDAP-1ND-001', quantity: 5 }, { orderId: 357, itemId: 'OSS-FRIN-AUTE-001', quantity: 2000 }] }
     ];
 }
 
@@ -151,15 +152,22 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
         case 'ADD_ITEM':
             const item = state.priceList.find(x => x.itemId === action.payload.itemId);
+            const items = state.userData.purchaseItems.concat({
+                orderId: item.id,
+                itemId: item.itemId,
+                quantity: 1
+            });
+            const sortedItems = items.sort((a, b) => {
+                if (a.orderId < b.orderId) return -1;
+                if (a.orderId > b.orderId) return 1;
+                return 0;
+            });
             if (item) {
                 return Object.assign({}, state, {
                     searchWord: null,
                     userData: Object.assign({}, state.userData, {
                         date: now(),
-                        purchaseItems: state.userData.purchaseItems.concat({
-                            itemId: item.itemId,
-                            quantity: 1
-                        })
+                        purchaseItems: sortedItems
                     })
                 });
             }

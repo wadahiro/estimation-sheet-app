@@ -20,7 +20,7 @@ module.exports = function (text) {
         const supplierPriceRules = (currentBuildSettings && currentBuildSettings.supplierPriceRules) ? currentBuildSettings.supplierPriceRules : buildSettings.default.supplierPriceRules;
 
         const resolvedRes = res.map((x, index) => {
-            x.id = index + '';
+            x.id = (index + 1) + '';
             x.onSale = x.onSale.toLowerCase() === 'true';
 
             // discount
@@ -62,7 +62,7 @@ module.exports = function (text) {
 
                     x.dynamicPrice = `function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
                     `;
-                    
+
                     x.dynamicSupplierPrice = `function dynamicSupplierPrice(item, quantity) { var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
                     `;
                 }
