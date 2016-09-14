@@ -13,7 +13,11 @@ interface Props {
 
 export class ExchangeRateBox extends React.Component<Props, void> {
     handleChangeRate = (type: CurrencyType) => (e) => {
-        this.props.onChangeRate(type, Number(e.target.value));
+        const rate = Number(e.target.value);
+        if (Number.isNaN(rate)) {
+            return;
+        }
+        this.props.onChangeRate(type, rate);
     };
 
     render() {
@@ -40,10 +44,10 @@ export class ExchangeRateBox extends React.Component<Props, void> {
                     <TableBody displayRowCheckbox={false}>
                         {value.map(x => {
                             return (
-                                <TableRow style={rowStyle}>
+                                <TableRow selectable={false} style={rowStyle}>
                                     <TableRowColumn style={columnStyle}>{x.type}</TableRowColumn>
                                     <TableRowColumn style={columnStyle}>
-                                        <TextField type='number' fullWidth value={x.rate} onChange={this.handleChangeRate(x.type)} />
+                                        <TextField fullWidth value={x.rate} onChange={this.handleChangeRate(x.type)} />
                                     </TableRowColumn>
                                 </TableRow>
                             );

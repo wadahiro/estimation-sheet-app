@@ -41,7 +41,7 @@ export class EstimationMetadata extends React.Component<Props, void> {
                     <TableBody displayRowCheckbox={false}>
                         {columns.map(x => {
                             return (
-                                <TableRow style={rowStyle}>
+                                <TableRow selectable={false} style={rowStyle}>
                                     <TableRowColumn style={columnStyle}>{x.label}</TableRowColumn>
                                     <TableRowColumn style={columnStyle}>{value[x.name]}</TableRowColumn>
                                 </TableRow>

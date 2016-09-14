@@ -48,7 +48,7 @@ export class Summary extends React.Component<Props, void> {
                         </TableRow>
                     </TableHeader>
                     <TableBody displayRowCheckbox={false}>
-                        <TableRow >
+                        <TableRow selectable={false}>
                             {columns.map(x => {
                                 const value = format(x.type, sum[x.name], exchangeRate);
                                 return (
