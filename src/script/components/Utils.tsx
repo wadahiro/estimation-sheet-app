@@ -10,7 +10,33 @@ export function toPercentage(rate: number): string {
     return `${floor(rate * 100, 2)} %`;
 }
 
-export function formatCurrency(type: CurrencyType, value: number): string {
+export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency): number {
+    const target = exchangeRate.find(x => x.type === currency.type);
+    if (!target) {
+        return currency.value;
+    }
+    return target.rate * currency.value;
+}
+
+function isCurrency(value: any): value is Currency {
+    return value && typeof value.type === 'string' && typeof value.value === 'number';
+}
+
+export function formatCurrency(value: Currency, exchangeRate: ExchangeRate[]): string[] {
+    let resolvedValue: string[];
+    resolvedValue = [formatCurrencyByType(value.type, value.value)];
+
+    // TODO parameterize 'JPY'
+    if (value.type !== 'JPY') {
+        const mainCurrency = exchangeCurrency(exchangeRate, value);
+        const mainCurrencyFormatted = formatCurrencyByType('JPY', mainCurrency);
+
+        resolvedValue = [mainCurrencyFormatted, resolvedValue[0]];
+    }
+    return resolvedValue;
+}
+
+export function formatCurrencyByType(type: CurrencyType, value: number): string {
     const currency = String(floor(value, 3)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
 
     // FIXME
@@ -26,36 +52,14 @@ export function formatCurrency(type: CurrencyType, value: number): string {
     }
 }
 
-export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency): number {
-    const target = exchangeRate.find(x => x.type === currency.type);
-    if (!target) {
-        return currency.value;
-    }
-    return target.rate * currency.value;
-}
-
-function isCurrency(value: any): value is Currency {
-    return value && typeof value.type === 'string' && typeof value.value === 'number';
-}
-
 export function format(type: 'currency' | 'percentage', value: string | number | Currency, exchangeRate: ExchangeRate[]): string | string[] {
 
     switch (type) {
         case 'currency':
-            let resolvedValue: string | string[];
             if (isCurrency(value)) {
-                resolvedValue = formatCurrency(value.type, value.value);
-
-                // TODO parameterize 'JPY'
-                if (value.type !== 'JPY') {
-                    const mainCurrency = exchangeCurrency(exchangeRate, value);
-                    const mainCurrencyFormatted = formatCurrency('JPY', mainCurrency);
-
-                    resolvedValue = [mainCurrencyFormatted, resolvedValue];
-                }
-                return resolvedValue;
+                return formatCurrency(value, exchangeRate);
             } else {
-                return formatCurrency('JPY', Number(value));
+                return formatCurrencyByType('JPY', Number(value));
             }
 
         case 'percentage':

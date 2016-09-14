@@ -135,6 +135,9 @@ function initPriceList(list: Item[]): Item[] {
         if (x.dynamicPrice) {
             x.dynamicPrice = Function.call(null, 'return ' + x.dynamicPrice)();
         }
+        if (x.dynamicSupplierPrice) {
+            x.dynamicSupplierPrice = Function.call(null, 'return ' + x.dynamicSupplierPrice)();
+        }
         return x;
     });
 }

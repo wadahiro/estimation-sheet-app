@@ -39,16 +39,25 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
         return purchaseItems.map((x, index) => {
             const item = priceList.find(y => y.id === x.id);
 
-            // Calc price, sum
+            // Calc price
             let sumPrice: Currency = {
                 type: item.price.type,
                 value: 0
             };
-            if (item.dynamicPrice) {
+            let price: Currency = item.price;
+
+            // price
+            if (typeof item.dynamicPrice === 'function') {
                 sumPrice = item.dynamicPrice(item, x.quantity);
+                price = {
+                    type: sumPrice.type,
+                    value: sumPrice.value / x.quantity
+                };
             } else {
                 sumPrice.value = item.price.value * (x.quantity || 0);
             }
+
+            // Calc cost
             let sumCost: Currency = {
                 type: item.supplierPrice.type,
                 value: 0
@@ -59,11 +68,23 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
                 sumCost.value = item.supplierPrice.value * (x.quantity || 0);
             }
 
-            return <PurchaseDetailItem>Object.assign({
+            // supplierPrice
+            let supplierPrice = item.supplierPrice;
+            if (typeof item.dynamicSupplierPrice === 'function') {
+                sumCost = item.dynamicSupplierPrice(item, x.quantity);
+                supplierPrice = {
+                    type: sumCost.type,
+                    value: sumCost.value / x.quantity
+                };
+            }
+
+            return <PurchaseDetailItem>Object.assign(item, x, {
                 displayId: index + 1,
                 sumPrice,
-                sumCost
-            }, item, x);
+                sumCost,
+                price,
+                supplierPrice
+            });
         });
     }
 );

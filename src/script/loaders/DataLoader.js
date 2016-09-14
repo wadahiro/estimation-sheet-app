@@ -62,6 +62,9 @@ module.exports = function (text) {
 
                     x.dynamicPrice = `function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
                     `;
+                    
+                    x.dynamicSupplierPrice = `function dynamicSupplierPrice(item, quantity) { var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
+                    `;
                 }
             });
 

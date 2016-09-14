@@ -60,17 +60,28 @@ export class PurchaseItems extends React.Component<Props, void> {
     };
 
     renderPrice = (item: PurchaseDetailItem) => {
+        const { exchangeRate } = this.props;
+
+        const sumPrice = formatCurrency(item.sumPrice, exchangeRate);
+        const price = formatCurrency(item.price, exchangeRate);
+
         if (item.quantity > 1) {
-            return <span>{formatCurrency(item.sumPrice.type, item.sumPrice.value)}<br /><span style={{ fontSize: 10 }}>(単価: {formatCurrency(item.price.type, item.price.value)})</span></span>;
+            return <span>
+                {this.renderMultiValues(sumPrice)}
+                <span style={{ fontSize: 10 }}>
+                    {this.renderMultiValues(price, '単価：')}
+                </span>
+            </span>;
+
         } else {
-            return <span>{formatCurrency(item.sumPrice.type, item.sumPrice.value)}</span>;
+            return this.renderMultiValues(sumPrice);
         }
     };
 
-    renderMultiValues(value: string[]) {
+    renderMultiValues(value: string[], label = '') {
         return (
             <span>
-                {value.map(x => <div>{x}</div>)}
+                {label}{value.map(x => <div>{x}</div>)}
             </span>
         );
     }
@@ -79,7 +90,12 @@ export class PurchaseItems extends React.Component<Props, void> {
         const { columns, purchaseDetailItems, exchangeRate } = this.props;
 
         const idColStyle = {
-            width: 50
+            width: 30,
+            whiteSpace: 'normal'
+        };
+        const priceColStyle = {
+            width: 100,
+            whiteSpace: 'normal'
         };
         const columnStyle = {
             whiteSpace: 'normal'
@@ -97,16 +113,16 @@ export class PurchaseItems extends React.Component<Props, void> {
 
                             {columns.map(x => {
                                 return (
-                                    <TableHeaderColumn key={x.name} >
+                                    <TableHeaderColumn key={x.name} style={columnStyle}>
                                         {x.label}
                                     </TableHeaderColumn>
                                 );
                             })
                             }
 
-                            <TableHeaderColumn>個数/ユーザー数</TableHeaderColumn>
-                            <TableHeaderColumn>価格</TableHeaderColumn>
-                            <TableHeaderColumn></TableHeaderColumn>
+                            <TableHeaderColumn style={columnStyle}>個数/ユーザー数</TableHeaderColumn>
+                            <TableHeaderColumn style={priceColStyle}>価格</TableHeaderColumn>
+                            <TableHeaderColumn style={columnStyle}></TableHeaderColumn>
                         </TableRow>
                     </TableHeader>
 
@@ -130,7 +146,7 @@ export class PurchaseItems extends React.Component<Props, void> {
                                     })}
 
                                     <TableRowColumn style={columnStyle}>{this.renderQuantity(x)}</TableRowColumn>
-                                    <TableRowColumn style={columnStyle}>{this.renderPrice(x)}</TableRowColumn>
+                                    <TableRowColumn style={priceColStyle}>{this.renderPrice(x)}</TableRowColumn>
                                     <TableRowColumn>{this.renderAction(x)}</TableRowColumn>
                                 </TableRow>
                             );
