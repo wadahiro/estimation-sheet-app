@@ -27,7 +27,7 @@ module.exports = function (text) {
             let discountRate = 0;
             if (seller !== 'default') {
                 if (x[`seller_${seller}`]) {
-                    discountRate = x[`seller_${seller}`];
+                    discountRate = Number(x[`seller_${seller}`]);
                 }
             }
 
@@ -58,7 +58,7 @@ module.exports = function (text) {
                     const price = rule.price(x, supplierPrice);
 
                     // discount
-                    const discountPrice = price.map(z => applyDiscount(discountRate, z));
+                    const discountPrice = rule.discountPrice(x, price, discountRate);
 
                     x.dynamicPrice = `function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
                     `;
@@ -84,8 +84,15 @@ module.exports = function (text) {
 
             return x;
         });
-        // console.log(JSON.stringify(resolvedRes, null, 2));
-        return 'module.exports = ' + JSON.stringify(resolvedRes, replacer);
+
+        const additionalPurchaseItemRules = (currentBuildSettings && currentBuildSettings.additionalPurchaseItemRules) ? currentBuildSettings.additionalPurchaseItemRules : buildSettings.default.additionalPurchaseItemRules;
+
+        const data = {
+            price: resolvedRes,
+            additionalPurchaseItemRules
+        };
+
+        return 'module.exports = ' + JSON.stringify(data, replacer);
     } catch (e) {
         console.error(e)
         throw e;
@@ -100,5 +107,5 @@ function replacer(k, v) {
 }
 
 function applyDiscount(rate, price) {
-    return price - (price * Number(rate) / 100);
+    return price * (1 - rate);
 }

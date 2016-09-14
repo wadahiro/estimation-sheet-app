@@ -3,8 +3,7 @@ import * as React from 'react';
 import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
-import { PurchaseDetailItem } from '../selectors';
-import { RootState, Column, ExchangeRate, Currency } from '../reducers';
+import { RootState, Column, ExchangeRate, Currency, PurchaseDetailItem } from '../reducers';
 import { format, exchangeCurrency } from './Utils';
 
 interface Props {

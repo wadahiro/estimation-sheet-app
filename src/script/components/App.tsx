@@ -9,8 +9,8 @@ import FileDownload from 'material-ui/svg-icons/file/file-download';
 import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
-import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, PurchaseDetailItem, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
+import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, isEditing, getCurrentSavedHistory } from '../selectors';
+import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
 import { EstimationMetadata } from './EstimationMetadata';

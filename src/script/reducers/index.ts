@@ -7,8 +7,7 @@ const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
 const includeAction = ReduxUndo.includeAction;
 
-// const PRICE_LIST = require('../data/price-list.csv');
-const PRICE_LIST = require('../data/price.csv');
+const PRICE_DATA = require('../data/price.csv');
 
 export interface RootState {
     app: AppStateHistory;
@@ -26,6 +25,7 @@ export interface AppState {
     purchaseItemsColumns: Column[];
 
     priceList: Item[];
+    additionalPurchaseItemRules: Rule<PurchaseDetailItem[]>[];
 
     searchWord: string;
 
@@ -50,6 +50,10 @@ export interface Option {
     onSale?: boolean;
 }
 
+export interface Rule<T> {
+    rule: (items: T) => T;
+}
+
 export type CurrencyType = 'JPY' | 'USD';
 
 export interface Item {
@@ -63,7 +67,6 @@ export interface Item {
     dynamicPrice?: (self: Item, quantity: number) => Currency;
     supplierPrice: Currency;
     dynamicSupplierPrice?: (self: Item, quantity: number) => Currency;
-    seller: string;
 
     onSale: boolean;
 }
@@ -72,6 +75,11 @@ export interface PurchaseItem {
     orderId: string;
     itemId: string; // primary key
     quantity: number;
+}
+
+export interface PurchaseDetailItem extends PurchaseItem, Item {
+    sumPrice: Currency;
+    sumCost: Currency;
 }
 
 export interface SavedHistory {
@@ -124,7 +132,8 @@ function init(): AppState {
         purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
 
         searchWord: null,
-        priceList: initPriceList(PRICE_LIST),
+        priceList: initPriceList(PRICE_DATA.price),
+        additionalPurchaseItemRules: initAdditionalPurchaseItemRules(PRICE_DATA.additionalPurchaseItemRules),
 
         userData,
         savedHistory
@@ -138,6 +147,15 @@ function initPriceList(list: Item[]): Item[] {
         }
         if (x.dynamicSupplierPrice) {
             x.dynamicSupplierPrice = Function.call(null, 'return ' + x.dynamicSupplierPrice)();
+        }
+        return x;
+    });
+}
+
+function initAdditionalPurchaseItemRules(rules: Rule<PurchaseDetailItem[]>[]): Rule<PurchaseDetailItem[]>[] {
+    return rules.map(x => {
+        if (typeof x.rule === 'string') {
+            x.rule = Function.call(null, 'return ' + x.rule)();
         }
         return x;
     });
@@ -157,11 +175,13 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 itemId: item.itemId,
                 quantity: 1
             });
+
             const sortedItems = items.sort((a, b) => {
                 if (a.orderId < b.orderId) return -1;
                 if (a.orderId > b.orderId) return 1;
                 return 0;
             });
+
             if (item) {
                 return Object.assign({}, state, {
                     searchWord: null,

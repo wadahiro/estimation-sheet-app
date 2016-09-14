@@ -5,8 +5,7 @@ import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 
-import { PurchaseDetailItem } from '../selectors';
-import { RootState, Column } from '../reducers';
+import { RootState, Column, PurchaseDetailItem } from '../reducers';
 import { format } from './Utils';
 
 const { Combobox } = require('react-input-enhancements');
