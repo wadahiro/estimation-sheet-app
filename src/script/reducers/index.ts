@@ -25,7 +25,7 @@ export interface AppState {
     purchaseItemsColumns: Column[];
 
     priceList: Item[];
-    additionalPurchaseItemRules: Rule<PurchaseDetailItem[]>[];
+    costRules: CostRule[];
 
     searchWord: string;
 
@@ -38,7 +38,8 @@ export interface Column {
     label: string;
     type?: 'currency' | 'percentage';
     required?: boolean;
-    options?: Option[]
+    options?: Option[];
+    decimalPlace?: number;
 }
 
 export interface Option {
@@ -50,10 +51,6 @@ export interface Option {
     onSale?: boolean;
 }
 
-export interface Rule<T> {
-    rule: (items: T) => T;
-}
-
 export type CurrencyType = 'JPY' | 'USD';
 
 export interface Item {
@@ -63,10 +60,12 @@ export interface Item {
     menu: string;
     unit: string;
     quantity: number;
-    price: Currency;
-    dynamicPrice?: (self: Item, quantity: number) => Currency;
+
     supplierPrice: Currency;
     dynamicSupplierPrice?: (self: Item, quantity: number) => Currency;
+
+    price: Currency;
+    dynamicPrice?: (self: Item, quantity: number) => Currency;
 
     onSale: boolean;
 }
@@ -80,6 +79,17 @@ export interface PurchaseItem {
 export interface PurchaseDetailItem extends PurchaseItem, Item {
     sumPrice: Currency;
     sumCost: Currency;
+}
+
+export interface CostItem {
+    id: string;
+    name: string;
+    supplierPrice: Currency;
+    price: Currency;
+}
+
+export interface CostRule {
+    calc: (items: PurchaseDetailItem[]) => CostItem[];
 }
 
 export interface SavedHistory {
@@ -133,7 +143,7 @@ function init(): AppState {
 
         searchWord: null,
         priceList: initPriceList(PRICE_DATA.price),
-        additionalPurchaseItemRules: initAdditionalPurchaseItemRules(PRICE_DATA.additionalPurchaseItemRules),
+        costRules: initCostRules(PRICE_DATA.costRules),
 
         userData,
         savedHistory
@@ -152,10 +162,10 @@ function initPriceList(list: Item[]): Item[] {
     });
 }
 
-function initAdditionalPurchaseItemRules(rules: Rule<PurchaseDetailItem[]>[]): Rule<PurchaseDetailItem[]>[] {
+function initCostRules(rules: CostRule[]): CostRule[] {
     return rules.map(x => {
-        if (typeof x.rule === 'string') {
-            x.rule = Function.call(null, 'return ' + x.rule)();
+        if (typeof x.calc === 'string') {
+            x.calc = Function.call(null, 'return ' + x.calc)();
         }
         return x;
     });
@@ -258,6 +268,6 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
 export default combineReducers({
     app: undoable(appStateReducer, {
-        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'MOD_EXCHANGE_RATE', 'RESTORE_SAVED_HISTORY'])
+        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'MOD_EXCHANGE_RATE', 'MOD_METADATA', 'RESTORE_SAVED_HISTORY'])
     }),
 });

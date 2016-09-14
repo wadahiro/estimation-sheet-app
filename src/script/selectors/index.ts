@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect';
-import { RootState, AppState, Item, PurchaseItem, PurchaseDetailItem, UserData, Option, Currency, Rule } from '../reducers';
+import { RootState, AppState, Item, PurchaseItem, PurchaseDetailItem, UserData, Option, Currency, CostItem, CostRule } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
-const getAdditionalPurchaseItemRules = (state: RootState) => state.app.present.additionalPurchaseItemRules;
+const getCostRules = (state: RootState) => state.app.present.costRules;
 const getExchangeRate = (state: RootState) => state.app.present.userData.exchangeRate;
 const getPresentAppState = (state: RootState) => state.app.present;
 
@@ -28,10 +28,11 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
         return priceOptions;
     }
 );
-export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailItem[], Item[], PurchaseItem[], Rule<PurchaseDetailItem[]>[]>(
-    getPriceList, getPurchaseItems, getAdditionalPurchaseItemRules,
-    (priceList, purchaseItems, additionalPurchaseItemRules) => {
-        const items = purchaseItems.map((x, index) => {
+
+export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailItem[], Item[], PurchaseItem[]>(
+    getPriceList, getPurchaseItems,
+    (priceList, purchaseItems) => {
+        return purchaseItems.map((x, index) => {
             const item = priceList.find(y => y.itemId === x.itemId);
 
             // Calc price
@@ -80,11 +81,18 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
                 supplierPrice
             });
         });
+    }
+);
+
+
+export const getEnhancedCostItems = createSelector<RootState, CostItem[], PurchaseDetailItem[], CostRule[]>(
+    getPurchaseDetailItems, getCostRules,
+    (purchaseItems, costRules) => {
 
         // additional
-        const enhancedItems = additionalPurchaseItemRules.reduce<PurchaseDetailItem[]>((s, x) => {
-            return x.rule(s);
-        }, items);
+        const enhancedItems = costRules.reduce<CostItem[]>((s, x) => {
+            return s.concat(x.calc(purchaseItems));
+        }, [] as CostItem[]);
 
         return enhancedItems;
     }

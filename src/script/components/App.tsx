@@ -9,14 +9,15 @@ import FileDownload from 'material-ui/svg-icons/file/file-download';
 import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
-import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
+import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, getEnhancedCostItems, isEditing, getCurrentSavedHistory } from '../selectors';
+import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
 import { EstimationMetadata } from './EstimationMetadata';
 import { Summary } from './Summary';
 import { ExchangeRateBox } from './ExchangeRateBox';
 import { PurchaseItems } from './PurchaseItems';
+import { CostItems } from './CostItems';
 import { HistoryMenu } from './HistoryMenu';
 import { SaveDialog } from './SaveDialog';
 import { save } from './Utils';
@@ -36,6 +37,7 @@ interface Props {
 
     searchWord?: string;
     purchaseDetailItems?: PurchaseDetailItem[];
+    costItems?: CostItem[],
 
     userData?: UserData,
 
@@ -143,10 +145,14 @@ class App extends React.Component<Props, State> {
             marginRight: 24
         };
 
+        const sectionTitleStyle = {
+            margin: 0
+        };
+
         const { estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
             priceList,
             userData,
-            searchWord, purchaseDetailItems, savedHistory,
+            searchWord, purchaseDetailItems, costItems, savedHistory,
             editing } = this.props;
 
         return (
@@ -165,13 +171,16 @@ class App extends React.Component<Props, State> {
 
                 <Grid className={style.grid}>
                     <Row className={style.row}>
-                        <Col xs={5}>
+                        <h4 style={sectionTitleStyle}>見積もり情報</h4>
+                    </Row>
+                    <Row className={style.row}>
+                        <Col xs={6}>
                             <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} />
                         </Col>
                         <Col xs={2}>
                             <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate} />
                         </Col>
-                        <Col xs={5}>
+                        <Col xs={4}>
                             <Summary columns={summaryColumns}
                                 purchaseDetailItems={purchaseDetailItems}
                                 exchangeRate={userData.exchangeRate} />
@@ -182,6 +191,9 @@ class App extends React.Component<Props, State> {
                 <Divider />
 
                 <Grid className={style.grid}>
+                    <Row className={style.row}>
+                        <h4 style={sectionTitleStyle}>見積もり内訳</h4>
+                    </Row>
                     <Row className={style.row}>
                         <Col xs={12}>
                             <SearchBox value={searchWord}
@@ -198,6 +210,21 @@ class App extends React.Component<Props, State> {
                             exchangeRate={userData.exchangeRate}
                             />
                     </Row>
+                </Grid>
+
+                <Divider />
+
+                <Grid className={style.grid}>
+                    <Row className={style.row}>
+                        <h4 style={sectionTitleStyle}>追加費用</h4>
+                    </Row>
+                    {costItems.length > 0 &&
+                        <Row className={style.row}>
+                            <CostItems costItems={costItems}
+                                exchangeRate={userData.exchangeRate}
+                                />
+                        </Row>
+                    }
                 </Grid>
 
                 {this.state.showSaveDialog &&
@@ -222,6 +249,7 @@ function mapStateToProps(state: RootState, props: Props): Props {
 
         searchWord: state.app.present.searchWord,
         purchaseDetailItems: getPurchaseDetailItems(state),
+        costItems: getEnhancedCostItems(state),
 
         savedHistory: state.app.present.savedHistory,
         editing: isEditing(state)

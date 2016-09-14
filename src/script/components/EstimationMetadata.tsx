@@ -3,11 +3,13 @@ import * as React from 'react';
 import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
+interface Column {
+    name: string;
+    label: string;
+}
+
 interface Props {
-    columns: {
-        name: string;
-        label: string;
-    }[];
+    columns: Column[];
     value: {
         [index: string]: string;
     };
@@ -25,25 +27,45 @@ export class EstimationMetadata extends React.Component<Props, void> {
             whiteSpace: 'normal'
         };
 
+        const colSize = 4;
+        const data = columns.reduce<{ name: string, value: string, type: string }[]>((s, x, index) => {
+            const labelData = { name: x.name, value: x.label, type: 'label' };
+            const valueData = { name: x.name, value: value[x.name], type: 'value' };
+
+            s.push(labelData);
+            s.push(valueData);
+
+            return s;
+        }, [])
+            .reduce<{ name: string, value: string, type: string }[][]>((s, x) => {
+                const last = s[s.length - 1];
+                if (last.length < colSize) {
+                    last.push(x);
+                } else {
+                    s.push([x]);
+                }
+                return s;
+            }, [[]]);
+
         return (
             <Paper>
-                <Table
-                    style={{ width: '100%' }}
-                    >
-
-                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
-                        <TableRow>
-                            <TableHeaderColumn colSpan={2} >
-                                見積もり情報
-                            </TableHeaderColumn>
-                        </TableRow>
-                    </TableHeader>
+                <Table>
                     <TableBody displayRowCheckbox={false}>
-                        {columns.map(x => {
+                        {data.map(row => {
                             return (
                                 <TableRow selectable={false} style={rowStyle}>
-                                    <TableRowColumn style={columnStyle}>{x.label}</TableRowColumn>
-                                    <TableRowColumn style={columnStyle}>{value[x.name]}</TableRowColumn>
+                                    {row.map(x => {
+                                        if (x.type === 'label') {
+                                            return (
+                                                <TableHeaderColumn style={columnStyle}>{x.value}</TableHeaderColumn>
+                                            );
+                                        } else {
+                                            return (
+                                                <TableRowColumn style={columnStyle}>{x.value}</TableRowColumn>
+                                            );
+                                        }
+                                    })
+                                    }
                                 </TableRow>
                             );
                         })}

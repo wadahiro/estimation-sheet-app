@@ -62,7 +62,7 @@ export class PurchaseItems extends React.Component<Props, void> {
         const { exchangeRate } = this.props;
 
         const sumPrice = formatCurrency(item.sumPrice, exchangeRate);
-        const price = formatCurrency(item.price, exchangeRate);
+        const price = formatCurrency(item.price, exchangeRate, 3);
 
         if (item.quantity > 1) {
             return <span>

@@ -2,10 +2,6 @@ import { RootState, CurrencyType, ExchangeRate, Currency } from '../reducers';
 
 const moment = require('moment');
 
-export function toYen(price: number = 0): string {
-    return `${String(floor(price, 3)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')} 円`;
-}
-
 export function toPercentage(rate: number): string {
     return `${floor(rate * 100, 2)} %`;
 }
@@ -18,13 +14,13 @@ export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currenc
     return target.rate * currency.value;
 }
 
-function isCurrency(value: any): value is Currency {
+export function isCurrency(value: any): value is Currency {
     return value && typeof value.type === 'string' && typeof value.value === 'number';
 }
 
-export function formatCurrency(value: Currency, exchangeRate: ExchangeRate[]): string[] {
+export function formatCurrency(value: Currency, exchangeRate: ExchangeRate[], decimalPlace = 0): string[] {
     let resolvedValue: string[];
-    resolvedValue = [formatCurrencyByType(value.type, value.value)];
+    resolvedValue = [formatCurrencyByType(value.type, value.value, decimalPlace)];
 
     // TODO parameterize 'JPY'
     if (value.type !== 'JPY') {
@@ -36,8 +32,8 @@ export function formatCurrency(value: Currency, exchangeRate: ExchangeRate[]): s
     return resolvedValue;
 }
 
-export function formatCurrencyByType(type: CurrencyType, value: number): string {
-    const currency = String(floor(value, 3)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+export function formatCurrencyByType(type: CurrencyType, value: number, decimalPlace = 0): string {
+    const currency = String(floor(value, decimalPlace)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
 
     // FIXME
     switch (type) {
@@ -52,14 +48,14 @@ export function formatCurrencyByType(type: CurrencyType, value: number): string 
     }
 }
 
-export function format(type: 'currency' | 'percentage', value: string | number | Currency, exchangeRate: ExchangeRate[]): string | string[] {
+export function format(type: 'currency' | 'percentage', value: string | number | Currency, exchangeRate: ExchangeRate[], decimalPlace = 0): string | string[] {
 
     switch (type) {
         case 'currency':
             if (isCurrency(value)) {
-                return formatCurrency(value, exchangeRate);
+                return formatCurrency(value, exchangeRate, decimalPlace);
             } else {
-                return formatCurrencyByType('JPY', Number(value));
+                return formatCurrencyByType('JPY', Number(value), decimalPlace);
             }
 
         case 'percentage':
