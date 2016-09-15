@@ -7,7 +7,7 @@ const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
 const includeAction = ReduxUndo.includeAction;
 
-const PRICE_LIST = require('../data/price-list.csv');
+const PRICE_DATA = require('../data/price.csv');
 
 export interface RootState {
     app: AppStateHistory;
@@ -25,6 +25,10 @@ export interface AppState {
     purchaseItemsColumns: Column[];
 
     priceList: Item[];
+    costRules: CostRule[];
+    validationRules: ValidationRule[];
+    showExchangeRate: CurrencyType[];
+
     searchWord: string;
 
     userData: UserData;
@@ -34,9 +38,10 @@ export interface AppState {
 export interface Column {
     name: string;
     label: string;
-    type?: 'yen' | 'rate';
+    type?: 'currency' | 'percentage';
     required?: boolean;
-    options?: Option[]
+    options?: Option[];
+    decimalPlace?: number;
 }
 
 export interface Option {
@@ -44,8 +49,11 @@ export interface Option {
     text: string;
     disabled?: boolean;
     static?: boolean;
-    value?: string
+    value?: string;
+    onSale?: boolean;
 }
+
+export type CurrencyType = 'JPY' | 'USD';
 
 export interface Item {
     id: string;
@@ -54,16 +62,45 @@ export interface Item {
     menu: string;
     unit: string;
     quantity: number;
-    price: number;
-    suppliersPrice: number;
-    seller: string;
 
-    cost: number;
+    supplierPrice: Currency;
+    dynamicSupplierPrice?: (self: Item, quantity: number) => Currency;
+
+    price: Currency;
+    dynamicPrice?: (self: Item, quantity: number) => Currency;
+
+    onSale: boolean;
 }
 
 export interface PurchaseItem {
-    id: string;
+    orderId: string;
+    itemId: string; // primary key
     quantity: number;
+}
+
+export interface PurchaseDetailItem extends PurchaseItem, Item {
+    sumPrice: Currency;
+    sumCost: Currency;
+}
+
+export interface CostItem {
+    id: string;
+    name: string;
+    supplierPrice: Currency;
+    price: Currency;
+}
+
+export interface CostRule {
+    calc: (items: PurchaseDetailItem[]) => CostItem[];
+}
+
+export interface ValidationRule {
+    calc: (items: PurchaseDetailItem[]) => ValidationResult[];
+}
+
+export interface ValidationResult {
+    id: string;
+    message: string;
 }
 
 export interface SavedHistory {
@@ -75,23 +112,33 @@ export interface UserData {
     estimationMetadata: {
         [index: string]: string;
     };
-    dollarExchangeRate: number;
+    exchangeRate: ExchangeRate[];
     purchaseItems: PurchaseItem[];
+}
+
+export interface Currency {
+    type: CurrencyType;
+    value: number;
+}
+
+export interface ExchangeRate {
+    type: CurrencyType;
+    rate: number;
 }
 
 // for test server
 if (process.env.NODE_ENV !== 'production') {
-    window['SAVED_HISTORY'] = [
-        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, dollarExchangeRate: 120, purchaseItems: [{ id: '1', quantity: 20 }] },
-        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, dollarExchangeRate: 100, purchaseItems: [{ id: '20', quantity: 5 }, { id: '49', quantity: 8 }] }
-    ];
+    // window['SAVED_HISTORY'] = [
+    //     { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ orderId: 376, itemId: 'OSS-FREX-IDEG-001', quantity: 20 }] },
+    //     { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ orderId: 254, itemId: 'OSS-LDAP-1ND-001', quantity: 5 }, { orderId: 357, itemId: 'OSS-FRIN-AUTE-001', quantity: 2000 }] }
+    // ];
 }
 
 function init(): AppState {
     let userData: UserData = {
         date: '',
         estimationMetadata: {},
-        dollarExchangeRate: 120,
+        exchangeRate: process.env.EXCHANGE_RATE,
         purchaseItems: []
     };
 
@@ -106,15 +153,43 @@ function init(): AppState {
         purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
 
         searchWord: null,
-        priceList: initPriceList(PRICE_LIST),
+        priceList: initPriceList(PRICE_DATA.price),
+        costRules: initCostRules(PRICE_DATA.costRules),
+        validationRules: initValidationRules(PRICE_DATA.validationRules),
+
+        showExchangeRate: PRICE_DATA.showExchangeRate,
 
         userData,
         savedHistory
     };
 }
 
-function initPriceList(list): Item[] {
+function initPriceList(list: Item[]): Item[] {
     return list.map(x => {
+        if (x.dynamicPrice) {
+            x.dynamicPrice = Function.call(null, 'return ' + x.dynamicPrice)();
+        }
+        if (x.dynamicSupplierPrice) {
+            x.dynamicSupplierPrice = Function.call(null, 'return ' + x.dynamicSupplierPrice)();
+        }
+        return x;
+    });
+}
+
+function initCostRules(rules: CostRule[]): CostRule[] {
+    return rules.map(x => {
+        if (typeof x.calc === 'string') {
+            x.calc = Function.call(null, 'return ' + x.calc)();
+        }
+        return x;
+    });
+}
+
+function initValidationRules(rules: ValidationRule[]): ValidationRule[] {
+    return rules.map(x => {
+        if (typeof x.calc === 'string') {
+            x.calc = Function.call(null, 'return ' + x.calc)();
+        }
         return x;
     });
 }
@@ -127,28 +202,37 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             });
 
         case 'ADD_ITEM':
-            const item = state.priceList.find(x => x.id === action.payload.id);
+            const item = state.priceList.find(x => x.itemId === action.payload.itemId);
+            const items = state.userData.purchaseItems.concat({
+                orderId: item.id,
+                itemId: item.itemId,
+                quantity: 1
+            });
+
+            const sortedItems = items.sort((a, b) => {
+                if (a.orderId < b.orderId) return -1;
+                if (a.orderId > b.orderId) return 1;
+                return 0;
+            });
+
             if (item) {
                 return Object.assign({}, state, {
                     searchWord: null,
                     userData: Object.assign({}, state.userData, {
                         date: now(),
-                        purchaseItems: state.userData.purchaseItems.concat({
-                            id: item.id,
-                            quantity: 1
-                        })
+                        purchaseItems: sortedItems
                     })
                 });
             }
             return state;
 
         case 'DELETE_ITEM':
-            const deleteItem = state.userData.purchaseItems.find(x => x.id === action.payload.id);
+            const deleteItem = state.userData.purchaseItems.find(x => x.itemId === action.payload.itemId);
             if (deleteItem) {
                 return Object.assign({}, state, {
                     userData: Object.assign({}, state.userData, {
                         date: now(),
-                        purchaseItems: state.userData.purchaseItems.filter(x => x.id !== deleteItem.id)
+                        purchaseItems: state.userData.purchaseItems.filter(x => x.itemId !== deleteItem.itemId)
                     })
                 });
             }
@@ -159,9 +243,24 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 userData: Object.assign({}, state.userData, {
                     date: now(),
                     purchaseItems: state.userData.purchaseItems.map(x => {
-                        if (x.id === action.payload.id) {
+                        if (x.itemId === action.payload.itemId) {
                             return Object.assign({}, x, {
                                 quantity: action.payload.quantity
+                            });
+                        }
+                        return x;
+                    })
+                })
+            });
+
+        case 'MOD_EXCHANGE_RATE':
+            return Object.assign({}, state, {
+                userData: Object.assign({}, state.userData, {
+                    date: now(),
+                    exchangeRate: state.userData.exchangeRate.map(x => {
+                        if (x.type === action.payload.type) {
+                            return Object.assign({}, x, {
+                                rate: action.payload.rate
                             });
                         }
                         return x;
@@ -179,9 +278,8 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
         case 'MOD_METADATA':
             return Object.assign({}, state, {
                 userData: Object.assign({}, state.userData, {
-                    estimationMetadata: Object.assign({}, state.userData.estimationMetadata, {
-                        [action.payload.name]: action.payload.value
-                    })
+                    date: now(),
+                    estimationMetadata: Object.assign({}, action.payload.value)
                 })
             });
     }
@@ -191,6 +289,6 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
 
 export default combineReducers({
     app: undoable(appStateReducer, {
-        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'RESTORE_SAVED_HISTORY'])
+        filter: includeAction(['ADD_ITEM', 'DELETE_ITEM', 'MOD_QUANTITY', 'MOD_EXCHANGE_RATE', 'MOD_METADATA', 'RESTORE_SAVED_HISTORY'])
     }),
 });

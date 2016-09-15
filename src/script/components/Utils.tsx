@@ -1,22 +1,83 @@
-import { RootState } from '../reducers';
+import { RootState, CurrencyType, ExchangeRate, Currency } from '../reducers';
 
 const moment = require('moment');
 
-export function toYen(price: number = 0) {
-    return `${String(price).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')} 円`;
+export function toPercentage(rate: number): string {
+    return `${floor(rate * 100, 2)} %`;
 }
 
-export function toPercentage(rate: number) {
-    return `${Math.floor(rate * 100)} %`;
-}
-
-export function format(type: 'yen' | 'rate') {
-    switch (type) {
-        case 'yen':
-            return toYen;
-        case 'rate':
-            return toPercentage;
+export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency = { type: 'JPY', value: 0 }): number {
+    const target = exchangeRate.find(x => x.type === currency.type);
+    if (!target) {
+        return currency.value;
     }
+    return target.rate * currency.value;
+}
+
+export function isCurrency(value: any): value is Currency {
+    return value && typeof value.type === 'string' && typeof value.value === 'number';
+}
+
+export function formatCurrency(value: Currency, exchangeRate: ExchangeRate[], decimalPlace = 0): string[] {
+    let resolvedValue: string[];
+    resolvedValue = [formatCurrencyByType(value.type, value.value, decimalPlace)];
+
+    // TODO parameterize 'JPY'
+    if (value.type !== 'JPY') {
+        const mainCurrency = exchangeCurrency(exchangeRate, value);
+        const mainCurrencyFormatted = formatCurrencyByType('JPY', mainCurrency);
+
+        resolvedValue = [mainCurrencyFormatted, resolvedValue[0]];
+    }
+    return resolvedValue;
+}
+
+export function formatCurrencyByType(type: CurrencyType, value: number, decimalPlace = 0): string {
+    const currency = String(floor(value, decimalPlace)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+
+    // FIXME
+    switch (type) {
+        case 'JPY':
+            return `${currency} 円`;
+
+        case 'USD':
+            return `$ ${currency}`;
+
+        default:
+            return 'Uknown';
+    }
+}
+
+export function format(type: 'currency' | 'percentage', value: string | number | Currency, exchangeRate: ExchangeRate[], decimalPlace = 0): string | string[] {
+
+    switch (type) {
+        case 'currency':
+            if (isCurrency(value)) {
+                return formatCurrency(value, exchangeRate, decimalPlace);
+            } else {
+                return formatCurrencyByType('JPY', Number(value), decimalPlace);
+            }
+
+        case 'percentage':
+            return toPercentage(value as number);
+        default:
+            return value as string;
+    }
+}
+
+export function floor(num: number, n: number) {
+    const pow = Math.pow(10, n);
+    return Math.floor(num * pow) / pow;
+}
+
+export function ceil(num: number, n: number) {
+    const pow = Math.pow(10, n);
+    return Math.ceil(num * pow) / pow;
+}
+
+export function round(num: number, n: number) {
+    const pow = Math.pow(10, n);
+    return Math.round(num * pow) / pow;
 }
 
 export function save(rootState: RootState) {
@@ -44,6 +105,9 @@ export function save(rootState: RootState) {
     html += decodeURI('%3C!-- SAVED_HISTORY_END--%3E');
     html += after;
     html += decodeURI('%3C/html%3E');
+
+    // replace body
+    html = html.replace(/<div id="app">.*<\/div>/, '<div id="app"><\/div>');
 
     const blob = new Blob([html]);
     if (window.navigator.msSaveBlob) {

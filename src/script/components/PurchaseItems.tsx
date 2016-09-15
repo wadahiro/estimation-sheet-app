@@ -1,89 +1,158 @@
 import * as React from 'react';
-import * as M from 'react-mdl';
 
-import { PurchaseDetailItem } from '../selectors';
-import { RootState, Column } from '../reducers';
-import { format, toYen, toPercentage } from './Utils';
+import Paper from 'material-ui/Paper';
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
+import TextField from 'material-ui/TextField';
+import IconButton from 'material-ui/IconButton';
+import Delete from 'material-ui/svg-icons/action/delete';
+
+import { RootState, Column, PurchaseDetailItem, ExchangeRate } from '../reducers';
+import { format, formatCurrency, exchangeCurrency } from './Utils';
+
+const style = require('./style.css');
 
 interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
-    onChangeQuantity: (id: string, newQuantity: number) => void;
-    onDeleteItem: (id: string) => void;
+    onChangeQuantity: (itemId: string, newQuantity: number) => void;
+    onDeleteItem: (itemId: string) => void;
+    exchangeRate: ExchangeRate[];
 }
 
 export class PurchaseItems extends React.Component<Props, void> {
-
-    editableQuantity = (value, item: PurchaseDetailItem) => {
-        return <div className='quantity' style={{ marginLeft: 10 }}>
-            <M.Textfield label='' value={value} onChange={this.modifyQuantity(item)} />
-        </div>;
-    };
 
     modifyQuantity = (item: PurchaseDetailItem) => (e) => {
         const value = e.target.value.replace(/[０-９]/g, str => {
             return String.fromCharCode(str.charCodeAt(0) - 0xFEE0);
         });
 
-        const quantity = Number(value);
-        if (isNaN(quantity) || e.target.value === '') {
+        let quantity;
+        if (e.target.value === '') {
+            quantity = 0;
+        } else {
+            quantity = Number(value);
+        }
+
+        if (Number.isNaN(quantity)) {
             return;
         }
 
-        this.props.onChangeQuantity(item.id, quantity);
+        this.props.onChangeQuantity(item.itemId, quantity);
     };
 
-    renderAction = (value, item: PurchaseDetailItem) => {
-        return <M.IconButton name='delete' onClick={this.deleteItem(item.id)} />;
+    renderAction = (item: PurchaseDetailItem) => {
+        return <IconButton onClick={this.deleteItem(item.itemId)}>
+            <Delete />
+        </IconButton>;
     };
 
-    deleteItem = (id: string) => (e) => {
-        this.props.onDeleteItem(id);
+    deleteItem = (itemId: string) => (e) => {
+        this.props.onDeleteItem(itemId);
     };
 
-    renderPrice = (value: number, item: PurchaseDetailItem) => {
+    renderQuantity = (item: PurchaseDetailItem) => {
+        return (
+            <div className='quantity' style={{ marginLeft: 10 }}>
+                <TextField fullWidth value={item.quantity} onChange={this.modifyQuantity(item)} />
+            </div>
+        );
+    };
+
+    renderPrice = (item: PurchaseDetailItem) => {
+        const { exchangeRate } = this.props;
+
+        const sumPrice = formatCurrency(item.sumPrice, exchangeRate);
+        const price = formatCurrency(item.price, exchangeRate, 3);
+
         if (item.quantity > 1) {
-            const sum = value * item.quantity;
-            return <span>{toYen(sum)}<br /><span style={{ fontSize: 10 }}>(単価: {toYen(value)})</span></span>;
+            return <span>
+                {this.renderMultiValues(sumPrice)}
+                <span style={{ fontSize: 10 }}>
+                    {this.renderMultiValues(price, '単価：')}
+                </span>
+            </span>;
+
         } else {
-            return <span>{toYen(value)}</span>;
+            return this.renderMultiValues(sumPrice);
         }
     };
+
+    renderMultiValues(value: string[], label = '') {
+        return (
+            <span>
+                {label}{value.map(x => <div>{x}</div>)}
+            </span>
+        );
+    }
 
     render() {
-        const { columns, purchaseDetailItems } = this.props;
+        const { columns, purchaseDetailItems, exchangeRate } = this.props;
 
-        // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += (x.cost * (x.quantity || 0)); return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity || 0)); return s; }, 0);
-        const sum = {
-            cost,
-            receipt,
-            profitRate: (receipt - cost) / receipt
-        }
+        const idColStyle = {
+            width: 30,
+            whiteSpace: 'normal'
+        };
+        const priceColStyle = {
+            width: 100,
+            whiteSpace: 'normal'
+        };
+        const columnStyle = {
+            whiteSpace: 'normal'
+        };
 
         return (
-            <M.DataTable
-                style={{ width: '100%', tableLayout: 'fixed' }}
-                shadow={0}
-                rowKeyColumn='id'
-                rows={purchaseDetailItems}
-                >
-                <M.TableHeader name='displayId' style={{ width: 50 }}>#</M.TableHeader>
+            <Paper zDepth={2} >
+                <Table
+                    style={{ width: '100%', tableLayout: 'fixed' }}
+                    fixedHeader={true}
+                    >
+                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                        <TableRow>
+                            <TableHeaderColumn style={idColStyle}>#</TableHeaderColumn>
 
-                {columns.map(x => {
-                    return (
-                        <M.TableHeader key={x.name} numeric name={x.name} cellFormatter={format(x.type)} >
-                            {x.label}
-                        </M.TableHeader>
-                    );
-                })
-                }
+                            {columns.map(x => {
+                                return (
+                                    <TableHeaderColumn key={x.name} style={columnStyle}>
+                                        {x.label}
+                                    </TableHeaderColumn>
+                                );
+                            })
+                            }
 
-                <M.TableHeader numeric name='quantity' cellFormatter={this.editableQuantity}>個数</M.TableHeader>
-                <M.TableHeader numeric name='price' cellFormatter={this.renderPrice} tooltip='価格'>価格</M.TableHeader>
-                <M.TableHeader numeric name='action' cellFormatter={this.renderAction}></M.TableHeader>
-            </M.DataTable>
+                            <TableHeaderColumn style={columnStyle}>個数/ユーザー数</TableHeaderColumn>
+                            <TableHeaderColumn style={priceColStyle}>価格</TableHeaderColumn>
+                            <TableHeaderColumn style={columnStyle}></TableHeaderColumn>
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody displayRowCheckbox={false}>
+                        {purchaseDetailItems.map(x => {
+                            return (
+                                <TableRow key={x.id} selectable={false}>
+                                    <TableRowColumn style={idColStyle}>{x.id}</TableRowColumn>
+                                    {columns.map(y => {
+                                        const value = format(y.type, x[y.name], exchangeRate);
+
+                                        if (Array.isArray(value)) {
+                                            return (
+                                                <TableRowColumn key={y.name} style={columnStyle}>{this.renderMultiValues(value)}</TableRowColumn>
+                                            );
+                                        }
+
+                                        return (
+                                            <TableRowColumn key={y.name} style={columnStyle}>{value}</TableRowColumn>
+                                        );
+                                    })}
+
+                                    <TableRowColumn style={columnStyle}>{this.renderQuantity(x)}</TableRowColumn>
+                                    <TableRowColumn style={priceColStyle}>{this.renderPrice(x)}</TableRowColumn>
+                                    <TableRowColumn>{this.renderAction(x)}</TableRowColumn>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </Paper>
         );
     }
 }

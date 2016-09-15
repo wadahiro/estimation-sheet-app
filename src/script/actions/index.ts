@@ -1,4 +1,7 @@
 import { Action } from 'redux';
+
+import { CurrencyType } from '../reducers';
+
 const { ActionCreators } = require('redux-undo');
 
 export type Actions =
@@ -7,7 +10,8 @@ export type Actions =
     DeleteItem |
     ModifyQuantity |
     RestoreSavedHistory |
-    ModifyMetadata
+    ModifyMetadata |
+    ModifyExchangeRate
     ;
 
 export interface SearchItem extends Action {
@@ -28,14 +32,14 @@ export function searchItem(searchWord: string): SearchItem {
 export interface AddItem extends Action {
     type: 'ADD_ITEM';
     payload: {
-        id: string;
+        itemId: string;
     }
 }
-export function addItem(id: string): AddItem {
+export function addItem(itemId: string): AddItem {
     return {
         type: 'ADD_ITEM',
         payload: {
-            id
+            itemId
         }
     };
 }
@@ -43,14 +47,14 @@ export function addItem(id: string): AddItem {
 export interface DeleteItem extends Action {
     type: 'DELETE_ITEM';
     payload: {
-        id: string;
+        itemId: string;
     }
 }
-export function deleteItem(id: string): DeleteItem {
+export function deleteItem(itemId: string): DeleteItem {
     return {
         type: 'DELETE_ITEM',
         payload: {
-            id
+            itemId
         }
     };
 }
@@ -58,15 +62,15 @@ export function deleteItem(id: string): DeleteItem {
 export interface ModifyQuantity extends Action {
     type: 'MOD_QUANTITY';
     payload: {
-        id: string;
+        itemId: string;
         quantity: number;
     };
 }
-export function modifyQuantity(id: string, quantity: number): ModifyQuantity {
+export function modifyQuantity(itemId: string, quantity: number): ModifyQuantity {
     return {
         type: 'MOD_QUANTITY',
         payload: {
-            id,
+            itemId,
             quantity
         }
     };
@@ -90,16 +94,33 @@ export function restoreSavedHistory(date: string): RestoreSavedHistory {
 export interface ModifyMetadata extends Action {
     type: 'MOD_METADATA';
     payload: {
-        name: string;
-        value: string;
+        value: {
+            [index: string]: string
+        };
     };
 }
-export function modifyMetadata(name: string, value: string): ModifyMetadata {
+export function modifyMetadata(value: { [index: string]: string }): ModifyMetadata {
     return {
         type: 'MOD_METADATA',
         payload: {
-            name,
             value
+        }
+    };
+}
+
+export interface ModifyExchangeRate extends Action {
+    type: 'MOD_EXCHANGE_RATE';
+    payload: {
+        type: CurrencyType,
+        rate: number;
+    };
+}
+export function modifyExchangeRate(type: CurrencyType, rate: number): ModifyExchangeRate {
+    return {
+        type: 'MOD_EXCHANGE_RATE',
+        payload: {
+            type,
+            rate
         }
     };
 }

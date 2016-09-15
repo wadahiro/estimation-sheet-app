@@ -10,12 +10,19 @@ var userSettings = require('../buildSettings');
 var NODE_ENV = process.env.NODE_ENV;
 NODE_ENV = NODE_ENV && NODE_ENV.trim() === 'production' ? 'production' : 'development';
 
+function replacer(k, v) {
+  if (typeof v === 'function') {
+    return v.toString();
+  }
+  return v;
+}
 
 function makeConfig(settings) {
   var sellerSettings = settings.sellers.map(x => {
     return Object.assign({}, settings.default, x);
   });
-  var configs = [settings.default].concat(sellerSettings);
+  var defaultSetting = Object.assign({}, settings.default, { name: 'default' });
+  var configs = [defaultSetting].concat(sellerSettings);
   return configs.map(x => {
 
     return {
@@ -46,8 +53,16 @@ function makeConfig(settings) {
             loader: "url-loader?mimetype=application/font-woff"
           },
           {
+            test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+            loader: "url-loader?mimetype=image/svg+xml"
+          },
+          {
             test: /\.(c|t)sv$/,
             loaders: ['DataLoader?seller=' + x.name],
+          },
+          {
+            test: /\.css$/,
+            loader: 'style-loader!css-loader?modules',
           },
           {
             test: /\.scss$/,
@@ -89,21 +104,15 @@ function makeConfig(settings) {
           'process.env.SELLER': '"' + x.name + '"',
           'process.env.ESTIMATION_METADATA': JSON.stringify(x.estimationMetadata),
           'process.env.SUMMARY_COLUMNS': JSON.stringify(x.summaryColumns),
-          'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(x.purchaseItemsColumns)
+          'process.env.PURCHASE_ITEMS_COLUMNS': JSON.stringify(x.purchaseItemsColumns),
+          'process.env.EXCHANGE_RATE': JSON.stringify(settings.exchangeRate)
         }),
         new HtmlWebpackPlugin({
           inject: NODE_ENV === 'production' ? false : true,
           cache: NODE_ENV === 'production' ? false : true,
-          filename: 'index.html',
+          filename: NODE_ENV === 'production' ? x.fileName + '.html' : 'index.html',
           template: NODE_ENV === 'production' ? path.join(__dirname, '../src/template.jade') : path.join(__dirname, '../src/index.html'),
           hash: false
-        }),
-        new AddAssetHtmlPlugin({
-          filename: require.resolve('../node_modules/react-mdl/extra/material.js'),
-          publicPath: 'assets',
-          outputPath: 'assets',
-          hash: false,
-          includeSourcemap: false
         }),
         new AddAssetHtmlPlugin({
           filename: require.resolve('../.dll/vendor.js'),

@@ -18,7 +18,7 @@ module.exports = {
             { name: 'itemId', 'label': '商品番号' },
             { name: 'name', 'label': '商品名' },
             { name: 'unit', 'label': '単位' },
-            { name: 'suppliersPrice', 'label': '仕入単価', type: 'yen' }
+            { name: 'supplierPrice', 'label': '仕入単価', type: 'yen' }
         ]
     },
     sellers: [

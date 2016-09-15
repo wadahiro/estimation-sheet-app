@@ -15,6 +15,14 @@ var config = {
         filename: '[name].js',
         library: '[name]_[hash]'
     },
+    module: {
+        loaders: [
+            {
+                test: /\.css$/,
+                loader: 'style-loader!css-loader?modules',
+            }
+        ]
+    },
     plugins: [
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"' + NODE_ENV + '"'

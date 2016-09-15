@@ -1,14 +1,24 @@
 import * as React from 'react';
-import * as M from 'react-mdl';
+
+import TextField from 'material-ui/TextField';
 
 import { Option } from '../reducers';
 
-const { Combobox } = require('react-input-enhancements');
+const { Combobox, Dropdown  } = require('react-input-enhancements');
+const filters = require('react-input-enhancements/lib/filters');
+
+const optionFilters = [
+    filters.filterByMatchingTextWithThreshold(20),
+    filters.sortByMatchingText,
+    filters.limitBy(10000),
+    filters.notFoundMessage('見つかりません'),
+    filters.filterRedudantSeparators
+];
 
 interface Props {
     value: string;
     options: Option[];
-    onValueChange: (id: string) => void;
+    onValueChange: (itemId: string) => void;
     onChangeSearchWord: (word: string) => void;
 }
 
@@ -17,10 +27,19 @@ export class SearchBox extends React.Component<Props, void> {
         this.props.onChangeSearchWord(e.target.value);
     };
 
-    handleValueChange = (id: string) => {
+    handleValueChange = (itemId: string) => {
         setTimeout(() => {
-            this.props.onValueChange(id);
+            this.props.onValueChange(itemId);
         });
+    };
+
+    renderOption = (className, style, opt: Option, highlighted) => {
+        const customStyle = style || {};
+        if (!opt.onSale) {
+            customStyle.fontStyle = 'italic';
+            customStyle.color = 'rgba(0, 0, 0, 0.298039)';
+        }
+        return Dropdown.defaultProps.onRenderOption(className, customStyle, opt, highlighted);
     };
 
     render() {
@@ -34,15 +53,15 @@ export class SearchBox extends React.Component<Props, void> {
                 dropdownProps={{ style: { width: '100%' } }}
                 onValueChange={this.handleValueChange}
                 onChange={this.handleChange}
+                onRenderOption={this.renderOption}
+                optionFilters={optionFilters}
                 autocomplete>
                 {inputProps => {
-                    return <M.Textfield
+                    return <TextField
                         {...inputProps}
                         className='select-item'
-                        label=''
                         style={{ width: '100%' }}
-                        placeholder='商品を選択してください'
-                        expandableIcon='search'
+                        hintText='商品を選択してください'
                         />
                 } }
             </Combobox>

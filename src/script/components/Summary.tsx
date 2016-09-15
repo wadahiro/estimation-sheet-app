@@ -1,50 +1,75 @@
 import * as React from 'react';
-import * as M from 'react-mdl';
 
-import { PurchaseDetailItem } from '../selectors';
-import { RootState, Column } from '../reducers';
-import { format } from './Utils';
+import Paper from 'material-ui/Paper';
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
+
+import { RootState, Column, ExchangeRate, Currency, PurchaseDetailItem, CostItem } from '../reducers';
+import { format, exchangeCurrency } from './Utils';
 
 interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
+    costItems?: CostItem[];
+    exchangeRate: ExchangeRate[];
 }
 
 export class Summary extends React.Component<Props, void> {
     render() {
-        const { columns, purchaseDetailItems } = this.props;
+        const { columns, purchaseDetailItems, costItems, exchangeRate } = this.props;
 
         // calc sum
-        const cost = purchaseDetailItems.reduce((s, x) => { s += (calcCost(x) * (x.quantity)); return s; }, 0);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += (x.price * (x.quantity)); return s; }, 0);
+        const cost1 = purchaseDetailItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.sumCost); return s; }, 0);
+        const cost2 = costItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.supplierPrice); return s; }, 0);
+        const cost: Currency = {
+            type: 'JPY',
+            value: cost1 + cost2
+        };
+
+        const receipt1 = purchaseDetailItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.sumPrice); return s; }, 0);
+        const receipt2 = costItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.price); return s; }, 0);
+
+        const receipt = receipt1 + receipt2;
         const sum = {
             cost,
             receipt,
-            profitRate: (receipt - cost) / receipt
+            profitRate: (receipt - cost.value) / receipt
         }
 
-        return (
-            <M.DataTable
-                style={{ width: '100%' }}
-                rows={[sum]}
-                >
-                {columns.map(x => {
-                    return (
-                        <M.TableHeader key={x.name} numeric name={x.name} cellFormatter={format(x.type)} >
-                            {x.label}
-                        </M.TableHeader>
-                    );
-                })
-                }
-            </M.DataTable>
-        );
-    }
-}
+        const columnStyle = {
+            whiteSpace: 'normal'
+        };
 
-function calcCost(item: PurchaseDetailItem) {
-    if (item.suppliersPrice === 0 || item.suppliersPrice === undefined) {
-        return item.price / 4;
-    } else {
-        return item.suppliersPrice;
+        return (
+            <Paper>
+                <Table
+                    style={{ width: '100%' }}
+                    >
+
+                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                        <TableRow>
+                            {columns.map(x => {
+                                return (
+                                    <TableHeaderColumn key={x.name} >
+                                        {x.label}
+                                    </TableHeaderColumn>
+                                );
+                            })}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody displayRowCheckbox={false}>
+                        <TableRow selectable={false}>
+                            {columns.map(x => {
+                                const value = format(x.type, sum[x.name], exchangeRate);
+                                return (
+                                    <TableRowColumn key={x.name} style={columnStyle}>
+                                        {value}
+                                    </TableRowColumn>
+                                );
+                            })}
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </Paper>
+        );
     }
 }

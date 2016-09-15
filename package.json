@@ -10,8 +10,7 @@
     "build:dll": "webpack --config=webpack/webpack.dll.js",
     "build:script": "cross-env webpack --config webpack/webpack.config.js",
     "build:assets": "npm run build:dll",
-    "build": "cross-env NODE_ENV=production npm run build:script",
-    "build:full": "cross-env NODE_ENV=production npm run build:assets && cross-env NODE_ENV=production npm run build:script",
+    "build": "cross-env NODE_ENV=production npm run build:assets && cross-env NODE_ENV=production npm run build:script",
     "server": "node-dev server.js",
     "start:server": "cross-env node-dev webpack/webpack.server.js",
     "start": "npm run build:assets && node-dev webpack/webpack.server.js"
@@ -48,14 +47,16 @@
     "xlsx": "^0.8.0"
   },
   "dependencies": {
-    "material-design-icons": "^3.0.1",
-    "material-design-lite": "^1.2.0",
+    "classnames": "^2.2.5",
+    "flexboxgrid": "^6.3.1",
+    "material-ui": "^0.16.0-rc1",
     "moment": "^2.14.1",
     "react": "^15.2.1",
     "react-dom": "^15.2.1",
+    "react-flexbox-grid": "^0.10.2",
     "react-input-enhancements": "^0.4.12",
-    "react-mdl": "^1.7.1",
     "react-redux": "^4.4.5",
+    "react-tap-event-plugin": "^1.0.0",
     "redux": "^3.5.2",
     "redux-undo": "^1.0.0-beta9",
     "reselect": "^2.5.3"
