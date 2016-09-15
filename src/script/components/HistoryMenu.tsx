@@ -48,7 +48,7 @@ export class HistoryMenu extends React.Component<Props, void> {
                         <Card>
                             <CardHeader
                                 title={<a href='#' onClick={this.handleClick(x.date)}>{x.date}</a>}
-                                subtitle={`${x.estimationMetadata['customerName']} : ${x.estimationMetadata['title']}`}
+                                subtitle={`${x.estimationMetadata['customerName'] || ''} : ${x.estimationMetadata['title'] || ''}`}
                                 actAsExpander={true}
                                 showExpandableButton={true}
                                 />
