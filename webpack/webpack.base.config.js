@@ -11,10 +11,10 @@ var NODE_ENV = process.env.NODE_ENV;
 NODE_ENV = NODE_ENV && NODE_ENV.trim() === 'production' ? 'production' : 'development';
 
 function replacer(k, v) {
-    if (typeof v === 'function') { 
-        return v.toString();
-    }
-    return v;
+  if (typeof v === 'function') {
+    return v.toString();
+  }
+  return v;
 }
 
 function makeConfig(settings) {
@@ -110,7 +110,7 @@ function makeConfig(settings) {
         new HtmlWebpackPlugin({
           inject: NODE_ENV === 'production' ? false : true,
           cache: NODE_ENV === 'production' ? false : true,
-          filename: 'index.html',
+          filename: NODE_ENV === 'production' ? x.fileName + '.html' : 'index.html',
           template: NODE_ENV === 'production' ? path.join(__dirname, '../src/template.jade') : path.join(__dirname, '../src/index.html'),
           hash: false
         }),
