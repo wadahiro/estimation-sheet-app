@@ -1,9 +1,10 @@
 import { createSelector } from 'reselect';
-import { RootState, AppState, Item, PurchaseItem, PurchaseDetailItem, UserData, Option, Currency, CostItem, CostRule } from '../reducers';
+import { RootState, AppState, Item, PurchaseItem, PurchaseDetailItem, UserData, Option, Currency, CostItem, CostRule, ValidationRule, ValidationResult } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
 const getCostRules = (state: RootState) => state.app.present.costRules;
+const getValidationRules = (state: RootState) => state.app.present.validationRules;
 const getExchangeRate = (state: RootState) => state.app.present.userData.exchangeRate;
 const getPresentAppState = (state: RootState) => state.app.present;
 
@@ -84,7 +85,6 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
     }
 );
 
-
 export const getEnhancedCostItems = createSelector<RootState, CostItem[], PurchaseDetailItem[], CostRule[]>(
     getPurchaseDetailItems, getCostRules,
     (purchaseItems, costRules) => {
@@ -95,6 +95,18 @@ export const getEnhancedCostItems = createSelector<RootState, CostItem[], Purcha
         }, [] as CostItem[]);
 
         return enhancedItems;
+    }
+);
+
+export const getValidationResults = createSelector<RootState, ValidationResult[], PurchaseDetailItem[], ValidationRule[]>(
+    getPurchaseDetailItems, getValidationRules,
+    (purchaseItems, validationRules) => {
+
+        const results = validationRules.reduce<ValidationResult[]>((s, x) => {
+            return s.concat(x.calc(purchaseItems));
+        }, [] as ValidationResult[]);
+
+        return results;
     }
 );
 

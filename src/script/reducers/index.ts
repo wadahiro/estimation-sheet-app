@@ -26,6 +26,7 @@ export interface AppState {
 
     priceList: Item[];
     costRules: CostRule[];
+    validationRules: ValidationRule[];
 
     searchWord: string;
 
@@ -92,6 +93,15 @@ export interface CostRule {
     calc: (items: PurchaseDetailItem[]) => CostItem[];
 }
 
+export interface ValidationRule {
+    calc: (items: PurchaseDetailItem[]) => ValidationResult[];
+}
+
+export interface ValidationResult {
+    id: string;
+    message: string;
+}
+
 export interface SavedHistory {
     history: UserData[];
 }
@@ -144,6 +154,7 @@ function init(): AppState {
         searchWord: null,
         priceList: initPriceList(PRICE_DATA.price),
         costRules: initCostRules(PRICE_DATA.costRules),
+        validationRules: initValidationRules(PRICE_DATA.validationRules),
 
         userData,
         savedHistory
@@ -163,6 +174,15 @@ function initPriceList(list: Item[]): Item[] {
 }
 
 function initCostRules(rules: CostRule[]): CostRule[] {
+    return rules.map(x => {
+        if (typeof x.calc === 'string') {
+            x.calc = Function.call(null, 'return ' + x.calc)();
+        }
+        return x;
+    });
+}
+
+function initValidationRules(rules: ValidationRule[]): ValidationRule[] {
     return rules.map(x => {
         if (typeof x.calc === 'string') {
             x.calc = Function.call(null, 'return ' + x.calc)();

@@ -9,8 +9,8 @@ import CreateIcon from 'material-ui/svg-icons/content/create';
 import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
-import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, getEnhancedCostItems, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
+import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, getEnhancedCostItems, getValidationResults, isEditing, getCurrentSavedHistory } from '../selectors';
+import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, ValidationResult, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
 import { EstimationMetadata } from './EstimationMetadata';
@@ -38,6 +38,7 @@ interface Props {
     searchWord?: string;
     purchaseDetailItems?: PurchaseDetailItem[];
     costItems?: CostItem[],
+    validationResults?: ValidationResult[],
 
     userData?: UserData,
 
@@ -149,7 +150,7 @@ class App extends React.Component<Props, State> {
         const { estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
             priceList,
             userData,
-            searchWord, purchaseDetailItems, costItems, savedHistory,
+            searchWord, purchaseDetailItems, costItems, validationResults, savedHistory,
             editing } = this.props;
 
         return (
@@ -191,6 +192,21 @@ class App extends React.Component<Props, State> {
                                 options={priceList}
                                 onValueChange={this.addItem}
                                 onChangeSearchWord={this.searchItem} />
+                        </Col>
+                    </Row>
+                    <Row className={style.row}>
+                        <Col xs={12}>
+                            {validationResults.length > 0 &&
+                                <ul>
+                                    {
+                                        validationResults.map(x => {
+                                            return (
+                                                <li key={x.id}>{x.message}</li>
+                                            );
+                                        })
+                                    }
+                                </ul>
+                            }
                         </Col>
                     </Row>
                     <Row className={style.row}>
@@ -238,6 +254,7 @@ function mapStateToProps(state: RootState, props: Props): Props {
         searchWord: state.app.present.searchWord,
         purchaseDetailItems: getPurchaseDetailItems(state),
         costItems: getEnhancedCostItems(state),
+        validationResults: getValidationResults(state),
 
         savedHistory: state.app.present.savedHistory,
         editing: isEditing(state)

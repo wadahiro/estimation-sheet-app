@@ -91,9 +91,12 @@ module.exports = function (text) {
 
         const costRules = (currentBuildSettings && currentBuildSettings.costRules) ? currentBuildSettings.costRules : buildSettings.default.costRules;
 
+        const validationRules = (currentBuildSettings && currentBuildSettings.validationRules) ? currentBuildSettings.validationRules : buildSettings.default.validationRules;
+
         const data = {
             price: resolvedRes,
-            costRules
+            costRules,
+            validationRules
         };
 
         return 'module.exports = ' + JSON.stringify(data, replacer);
