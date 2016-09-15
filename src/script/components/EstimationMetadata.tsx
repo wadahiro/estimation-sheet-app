@@ -2,6 +2,8 @@ import * as React from 'react';
 
 import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
+import IconButton from 'material-ui/IconButton';
+import CreateIcon from 'material-ui/svg-icons/content/create';
 
 interface Column {
     name: string;
@@ -13,6 +15,7 @@ interface Props {
     value: {
         [index: string]: string;
     };
+    onEdit: (e: any) => void;
 }
 
 export class EstimationMetadata extends React.Component<Props, void> {
@@ -23,8 +26,23 @@ export class EstimationMetadata extends React.Component<Props, void> {
             height: 25
         };
         const columnStyle = {
-            height: 20,
+            height: 30,
             whiteSpace: 'normal'
+        };
+        const iconColumnStyle = {
+            height: 20,
+            textAlign: 'right',
+            paddingRight: 10
+        };
+        const iconButtonStyle = {
+            height: 20,
+            width: 20,
+            padding: 0
+        };
+        const iconStyle = {
+            height: 20,
+            width: 20,
+            padding: 0
         };
 
         const colSize = 4;
@@ -50,6 +68,18 @@ export class EstimationMetadata extends React.Component<Props, void> {
         return (
             <Paper>
                 <Table>
+                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                        <TableRow>
+                            <TableHeaderColumn colSpan={colSize - 1} style={columnStyle}>
+                                見積もり情報
+                            </TableHeaderColumn>
+                            <TableHeaderColumn style={iconColumnStyle}>
+                                <IconButton style={iconButtonStyle} iconStyle={iconStyle} onClick={this.props.onEdit}>
+                                    <CreateIcon />
+                                </IconButton>
+                            </TableHeaderColumn>
+                        </TableRow>
+                    </TableHeader>
                     <TableBody displayRowCheckbox={false}>
                         {data.map(row => {
                             return (

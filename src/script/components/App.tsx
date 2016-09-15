@@ -5,7 +5,7 @@ import { createSelector } from 'reselect';
 
 import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';
-import Info from 'material-ui/svg-icons/action/info';
+import CreateIcon from 'material-ui/svg-icons/content/create';
 import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
@@ -96,6 +96,10 @@ class App extends React.Component<Props, State> {
         });
     };
 
+    changeMetadata = (value: { [index: string]: string }) => {
+        this.props.dispatch(Actions.modifyMetadata(value));
+    };
+
     save = () => {
         save(this.props.rootState);
     };
@@ -105,10 +109,6 @@ class App extends React.Component<Props, State> {
         this.setState({
             showDrawer: false
         });
-    };
-
-    changeMetadata = (value: { [index: string]: string }) => {
-        this.props.dispatch(Actions.modifyMetadata(value));
     };
 
     handleKeydown = (e) => {
@@ -168,13 +168,8 @@ class App extends React.Component<Props, State> {
 
                 <Grid className={style.grid}>
                     <Row className={style.row}>
-                        <h4 style={sectionTitleStyle}>見積もり情報</h4>
-                        &nbsp;
-                        <Info onClick={this.openDialog} />
-                    </Row>
-                    <Row className={style.row}>
                         <Col xs={6}>
-                            <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} />
+                            <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} onEdit={this.openDialog} />
                         </Col>
                         <Col xs={2}>
                             <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate} />
@@ -190,9 +185,6 @@ class App extends React.Component<Props, State> {
                 <Divider />
 
                 <Grid className={style.grid}>
-                    <Row className={style.row}>
-                        <h4 style={sectionTitleStyle}>見積もり内訳</h4>
-                    </Row>
                     <Row className={style.row}>
                         <Col xs={12}>
                             <SearchBox value={searchWord}
@@ -214,9 +206,6 @@ class App extends React.Component<Props, State> {
                 <Divider />
 
                 <Grid className={style.grid}>
-                    <Row className={style.row}>
-                        <h4 style={sectionTitleStyle}>追加費用</h4>
-                    </Row>
                     {costItems.length > 0 &&
                         <Row className={style.row}>
                             <CostItems costItems={costItems}

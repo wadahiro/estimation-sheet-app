@@ -37,6 +37,7 @@ export class EditEstimationMetadataDialog extends React.Component<Props, State> 
 
     handleClose = () => {
         this.props.onClose();
+        this.props.onSave(this.state.value);
     };
 
     handleChange = (name: string) => (e) => {
@@ -58,12 +59,7 @@ export class EditEstimationMetadataDialog extends React.Component<Props, State> 
     render() {
         const actions = [
             <FlatButton
-                label='キャンセル'
-                primary={true}
-                onTouchTap={this.handleClose}
-                />,
-            <FlatButton
-                label='設定'
+                label='閉じる'
                 primary={true}
                 keyboardFocused={true}
                 onTouchTap={this.handleSave}
@@ -114,9 +110,12 @@ export class EditEstimationMetadataDialog extends React.Component<Props, State> 
                     </div>
                 );
             }
+            // Use defaultValue instead of value
+            // https://github.com/callemall/material-ui/issues/3394
+            // http://qiita.com/koizuss@github/items/ddd656cbafd888f179d6
             return (
                 <div>
-                    <TextField hintText={x.label} value={value[x.name]} onChange={this.handleChange(x.name)} style={style} />
+                    <TextField hintText={x.label} defaultValue={value[x.name]} onChange={this.handleChange(x.name)} style={style} />
                 </div>
             );
         });
