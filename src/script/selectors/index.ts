@@ -54,25 +54,31 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
                 sumPrice.value = item.price.value * (x.quantity || 0);
             }
 
-            // Calc cost
-            let sumCost: Currency = {
-                type: item.supplierPrice.type,
-                value: 0
-            };
-            if (item.supplierPrice.value === 0) {
-                sumCost.value = sumPrice.value / 4;
-            } else {
-                sumCost.value = item.supplierPrice.value * (x.quantity || 0);
-            }
+            // TODO
+            let sumCost: Currency = { type: 'JPY', value: 0 };
+            let supplierPrice: Currency = { type: 'JPY', value: 0 };
 
-            // supplierPrice
-            let supplierPrice = item.supplierPrice;
-            if (typeof item.dynamicSupplierPrice === 'function') {
-                sumCost = item.dynamicSupplierPrice(item, x.quantity);
-                supplierPrice = {
-                    type: sumCost.type,
-                    value: sumCost.value / x.quantity
+            // Calc cost
+            if (item.supplierPrice) {
+                sumCost = {
+                    type: item.supplierPrice.type,
+                    value: 0
                 };
+                if (item.supplierPrice.value === 0) {
+                    sumCost.value = sumPrice.value / 4;
+                } else {
+                    sumCost.value = item.supplierPrice.value * (x.quantity || 0);
+                }
+
+                // supplierPrice
+                supplierPrice = item.supplierPrice;
+                if (typeof item.dynamicSupplierPrice === 'function') {
+                    sumCost = item.dynamicSupplierPrice(item, x.quantity);
+                    supplierPrice = {
+                        type: sumCost.type,
+                        value: sumCost.value / x.quantity
+                    };
+                }
             }
 
             return <PurchaseDetailItem>Object.assign(item, x, {
