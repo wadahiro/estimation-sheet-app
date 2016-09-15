@@ -27,6 +27,7 @@ export interface AppState {
     priceList: Item[];
     costRules: CostRule[];
     validationRules: ValidationRule[];
+    showExchangeRate: CurrencyType[];
 
     searchWord: string;
 
@@ -127,10 +128,10 @@ export interface ExchangeRate {
 
 // for test server
 if (process.env.NODE_ENV !== 'production') {
-    window['SAVED_HISTORY'] = [
-        { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ orderId: 376, itemId: 'OSS-FREX-IDEG-001', quantity: 20 }] },
-        { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ orderId: 254, itemId: 'OSS-LDAP-1ND-001', quantity: 5 }, { orderId: 357, itemId: 'OSS-FRIN-AUTE-001', quantity: 2000 }] }
-    ];
+    // window['SAVED_HISTORY'] = [
+    //     { date: '2016-08-01 13:33:20', estimationMetadata: { customerName: 'ABC', title: 'foobar' }, exchangeRate: [{ type: 'USD', rate: 120 }], purchaseItems: [{ orderId: 376, itemId: 'OSS-FREX-IDEG-001', quantity: 20 }] },
+    //     { date: '2016-09-06 09:10:40', estimationMetadata: { customerName: 'ABC', title: 'foobar2' }, exchangeRate: [{ type: 'USD', rate: 100 }], purchaseItems: [{ orderId: 254, itemId: 'OSS-LDAP-1ND-001', quantity: 5 }, { orderId: 357, itemId: 'OSS-FRIN-AUTE-001', quantity: 2000 }] }
+    // ];
 }
 
 function init(): AppState {
@@ -155,6 +156,8 @@ function init(): AppState {
         priceList: initPriceList(PRICE_DATA.price),
         costRules: initCostRules(PRICE_DATA.costRules),
         validationRules: initValidationRules(PRICE_DATA.validationRules),
+
+        showExchangeRate: PRICE_DATA.showExchangeRate,
 
         userData,
         savedHistory

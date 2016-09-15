@@ -16,6 +16,8 @@ module.exports = function (text) {
         const rows = query.rows;
         const res = rows ? dsv.parseRows(text) : dsv.parse(text);
 
+        const exchangeRate = buildSettings.exchangeRate[0].rate;
+
         const currentBuildSettings = buildSettings.sellers.find(x => x.name === seller);
         const priceRules = (currentBuildSettings && currentBuildSettings.priceRules) ? currentBuildSettings.priceRules : buildSettings.default.priceRules;
 
@@ -62,7 +64,7 @@ module.exports = function (text) {
                     const price = rule.price(x, supplierPrice);
 
                     // discount
-                    const discountPrice = rule.discountPrice(x, price, discountRate);
+                    const discountPrice = rule.discountPrice(x, price, discountRate, seller, exchangeRate);
 
                     x.dynamicPrice = `function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
                     `;
@@ -86,8 +88,13 @@ module.exports = function (text) {
                 }
             });
 
+            // exchange rate
+
+
             return x;
         });
+
+        const showExchangeRate = (currentBuildSettings && currentBuildSettings.exchangeRate) ? currentBuildSettings.exchangeRate : buildSettings.default.exchangeRate;
 
         const costRules = (currentBuildSettings && currentBuildSettings.costRules) ? currentBuildSettings.costRules : buildSettings.default.costRules;
 
@@ -96,7 +103,8 @@ module.exports = function (text) {
         const data = {
             price: resolvedRes,
             costRules,
-            validationRules
+            validationRules,
+            showExchangeRate
         };
 
         return 'module.exports = ' + JSON.stringify(data, replacer);

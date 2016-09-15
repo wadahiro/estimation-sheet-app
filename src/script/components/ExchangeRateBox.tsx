@@ -9,6 +9,7 @@ import { CurrencyType, ExchangeRate } from '../reducers';
 interface Props {
     value: ExchangeRate[];
     onChangeRate: (type: CurrencyType, rate: number) => void;
+    showExchangeRate: CurrencyType[];
 }
 
 export class ExchangeRateBox extends React.Component<Props, void> {
@@ -21,7 +22,7 @@ export class ExchangeRateBox extends React.Component<Props, void> {
     };
 
     render() {
-        const { value } = this.props;
+        const { value, showExchangeRate } = this.props;
 
         const rowStyle = {
             height: 25
@@ -30,6 +31,10 @@ export class ExchangeRateBox extends React.Component<Props, void> {
             height: 20,
             whiteSpace: 'normal'
         };
+
+        if (showExchangeRate.length === 0) {
+            return <div />;
+        }
 
         return (
             <Paper>
@@ -42,7 +47,7 @@ export class ExchangeRateBox extends React.Component<Props, void> {
                         </TableRow>
                     </TableHeader>
                     <TableBody displayRowCheckbox={false}>
-                        {value.map(x => {
+                        {value.filter(x => showExchangeRate.find(y => y === x.type) !== undefined).map(x => {
                             return (
                                 <TableRow selectable={false} style={rowStyle}>
                                     <TableRowColumn style={columnStyle}>{x.type}</TableRowColumn>

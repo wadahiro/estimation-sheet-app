@@ -40,6 +40,8 @@ interface Props {
     costItems?: CostItem[],
     validationResults?: ValidationResult[],
 
+    showExchangeRate?: CurrencyType[],
+
     userData?: UserData,
 
     savedHistory?: UserData[];
@@ -151,6 +153,7 @@ class App extends React.Component<Props, State> {
             priceList,
             userData,
             searchWord, purchaseDetailItems, costItems, validationResults, savedHistory,
+            showExchangeRate,
             editing } = this.props;
 
         return (
@@ -173,7 +176,8 @@ class App extends React.Component<Props, State> {
                             <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} onEdit={this.openDialog} />
                         </Col>
                         <Col xs={2}>
-                            <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate} />
+                            <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate}
+                                showExchangeRate={showExchangeRate} />
                         </Col>
                         <Col xs={4}>
                             <Summary columns={summaryColumns}
@@ -258,6 +262,8 @@ function mapStateToProps(state: RootState, props: Props): Props {
         purchaseDetailItems: getPurchaseDetailItems(state),
         costItems: getEnhancedCostItems(state),
         validationResults: getValidationResults(state),
+
+        showExchangeRate: state.app.present.showExchangeRate,
 
         savedHistory: state.app.present.savedHistory,
         editing: isEditing(state)
