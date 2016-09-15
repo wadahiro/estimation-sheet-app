@@ -76,7 +76,7 @@ module.exports = function (text) {
 
             // remove supplierPrice
             if (seller !== 'default') {
-                console.log('delete detail for ' + seller)
+                // console.log('delete detail for ' + seller)
                 delete x['supplierPrice'];
                 delete x['dynamicsupplierPrice'];
             }
