@@ -178,6 +178,7 @@ class App extends React.Component<Props, State> {
                         <Col xs={4}>
                             <Summary columns={summaryColumns}
                                 purchaseDetailItems={purchaseDetailItems}
+                                costItems={costItems}
                                 exchangeRate={userData.exchangeRate} />
                         </Col>
                     </Row>

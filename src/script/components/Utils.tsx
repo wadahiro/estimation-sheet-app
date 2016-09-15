@@ -6,7 +6,7 @@ export function toPercentage(rate: number): string {
     return `${floor(rate * 100, 2)} %`;
 }
 
-export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency): number {
+export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency = { type: 'JPY', value: 0 }): number {
     const target = exchangeRate.find(x => x.type === currency.type);
     if (!target) {
         return currency.value;
@@ -107,7 +107,7 @@ export function save(rootState: RootState) {
     html += decodeURI('%3C/html%3E');
 
     // replace body
-    html = html.replace(/<div id="app">.*<\/div>/, '<div id="app"><\/div>'); 
+    html = html.replace(/<div id="app">.*<\/div>/, '<div id="app"><\/div>');
 
     const blob = new Blob([html]);
     if (window.navigator.msSaveBlob) {
