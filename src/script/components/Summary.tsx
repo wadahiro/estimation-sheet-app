@@ -3,22 +3,32 @@ import * as React from 'react';
 import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
-import { RootState, Column, ExchangeRate, Currency, PurchaseDetailItem } from '../reducers';
+import { RootState, Column, ExchangeRate, Currency, PurchaseDetailItem, CostItem } from '../reducers';
 import { format, exchangeCurrency } from './Utils';
 
 interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
+    costItems?: CostItem[];
     exchangeRate: ExchangeRate[];
 }
 
 export class Summary extends React.Component<Props, void> {
     render() {
-        const { columns, purchaseDetailItems, exchangeRate } = this.props;
+        const { columns, purchaseDetailItems, costItems, exchangeRate } = this.props;
 
         // calc sum
-        const cost: Currency = purchaseDetailItems.reduce((s, x) => { s.value += exchangeCurrency(exchangeRate, x.sumCost); return s; }, { type: 'JPY', value: 0 } as Currency);
-        const receipt = purchaseDetailItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.sumPrice); return s; }, 0);
+        const cost1 = purchaseDetailItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.sumCost); return s; }, 0);
+        const cost2 = costItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.supplierPrice); return s; }, 0);
+        const cost: Currency = {
+            type: 'JPY',
+            value: cost1 + cost2
+        };
+
+        const receipt1 = purchaseDetailItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.sumPrice); return s; }, 0);
+        const receipt2 = costItems.reduce((s, x) => { s += exchangeCurrency(exchangeRate, x.price); return s; }, 0);
+
+        const receipt = receipt1 + receipt2;
         const sum = {
             cost,
             receipt,

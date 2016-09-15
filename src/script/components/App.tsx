@@ -219,17 +219,19 @@ class App extends React.Component<Props, State> {
                     </Row>
                 </Grid>
 
-                <Divider />
+                {costItems.length > 0 &&
+                    [
+                        <Divider />,
 
-                <Grid className={style.grid}>
-                    {costItems.length > 0 &&
-                        <Row className={style.row}>
-                            <CostItems costItems={costItems}
-                                exchangeRate={userData.exchangeRate}
-                                />
-                        </Row>
-                    }
-                </Grid>
+                        <Grid className={style.grid}>
+                            <Row className={style.row}>
+                                <CostItems costItems={costItems}
+                                    exchangeRate={userData.exchangeRate}
+                                    />
+                            </Row>
+                        </Grid>
+                    ]
+                }
 
                 {this.state.showDialog &&
                     <EditEstimationMetadataDialog columns={estimationMetadataColumns} defaultValue={userData.estimationMetadata} onSave={this.changeMetadata} onClose={this.closeDialog} />
