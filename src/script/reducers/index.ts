@@ -154,8 +154,8 @@ function init(): AppState {
 
         searchWord: null,
         priceList: initPriceList(PRICE_DATA.price),
-        costRules: initCostRules(PRICE_DATA.costRules),
-        validationRules: initValidationRules(PRICE_DATA.validationRules),
+        costRules: PRICE_DATA.costRules,
+        validationRules: PRICE_DATA.validationRules,
 
         showExchangeRate: PRICE_DATA.showExchangeRate,
 
@@ -166,30 +166,12 @@ function init(): AppState {
 
 function initPriceList(list: Item[]): Item[] {
     return list.map(x => {
-        if (x.dynamicPrice) {
-            x.dynamicPrice = Function.call(null, 'return ' + x.dynamicPrice)();
-        }
-        if (x.dynamicSupplierPrice) {
-            x.dynamicSupplierPrice = Function.call(null, 'return ' + x.dynamicSupplierPrice)();
-        }
-        return x;
-    });
-}
-
-function initCostRules(rules: CostRule[]): CostRule[] {
-    return rules.map(x => {
-        if (typeof x.calc === 'string') {
-            x.calc = Function.call(null, 'return ' + x.calc)();
-        }
-        return x;
-    });
-}
-
-function initValidationRules(rules: ValidationRule[]): ValidationRule[] {
-    return rules.map(x => {
-        if (typeof x.calc === 'string') {
-            x.calc = Function.call(null, 'return ' + x.calc)();
-        }
+        // if (x.dynamicPrice) {
+        //     x.dynamicPrice = Function.call(null, 'return ' + x.dynamicPrice)();
+        // }
+        // if (x.dynamicSupplierPrice) {
+        //     x.dynamicSupplierPrice = Function.call(null, 'return ' + x.dynamicSupplierPrice)();
+        // }
         return x;
     });
 }

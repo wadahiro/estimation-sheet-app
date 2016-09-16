@@ -2,6 +2,7 @@
     built using dsv by Mike Bostock */
 
 const loaderUtils = require('loader-utils');
+const serialize = require('serialize-javascript');
 const dsvFormat = require('d3-dsv').dsvFormat;
 const buildSettings = require('../../../buildSettings');
 
@@ -21,7 +22,7 @@ module.exports = function (text) {
         const currentBuildSettings = buildSettings.sellers.find(x => x.name === seller);
         const priceRules = (currentBuildSettings && currentBuildSettings.priceRules) ? currentBuildSettings.priceRules : buildSettings.default.priceRules;
 
-        const resolvedRes = res.map((x, index) => {
+        const priceList = res.map((x, index) => {
             x.id = (index + 1) + '';
             x.onSale = x.onSale.toLowerCase() === 'true';
 
@@ -66,11 +67,9 @@ module.exports = function (text) {
                     // discount
                     const discountPrice = rule.discountPrice(x, price, discountRate, seller, exchangeRate);
 
-                    x.dynamicPrice = `function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
-                    `;
+                    x.dynamicPrice = Function.call(null, `return function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
 
-                    x.dynamicSupplierPrice = `function dynamicSupplierPrice(item, quantity) { var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}
-                    `;
+                    x.dynamicSupplierPrice = Function.call(null, `return function dynamicSupplierPrice(item, quantity) { var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
                 }
             });
 
@@ -88,9 +87,6 @@ module.exports = function (text) {
                 }
             });
 
-            // exchange rate
-
-
             return x;
         });
 
@@ -101,13 +97,13 @@ module.exports = function (text) {
         const validationRules = (currentBuildSettings && currentBuildSettings.validationRules) ? currentBuildSettings.validationRules : buildSettings.default.validationRules;
 
         const data = {
-            price: resolvedRes,
-            costRules,
-            validationRules,
-            showExchangeRate
+            price: priceList,
+            costRules: costRules,
+            validationRules: validationRules,
+            showExchangeRate: showExchangeRate
         };
 
-        return 'module.exports = ' + JSON.stringify(data, replacer);
+        return `module.exports = ${serialize(data)};`;
     } catch (e) {
         console.error(e)
         throw e;
