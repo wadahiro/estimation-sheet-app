@@ -3,7 +3,7 @@ import { RootState, CurrencyType, ExchangeRate, Currency } from '../reducers';
 const moment = require('moment');
 
 export function toPercentage(rate: number): string {
-    return `${floor(rate * 100, 2)} %`;
+    return `${round(rate * 100, 2)} %`;
 }
 
 export function exchangeCurrency(exchangeRate: ExchangeRate[], currency: Currency = { type: 'JPY', value: 0 }): number {
@@ -33,7 +33,7 @@ export function formatCurrency(value: Currency, exchangeRate: ExchangeRate[], de
 }
 
 export function formatCurrencyByType(type: CurrencyType, value: number, decimalPlace = 0): string {
-    const currency = String(floor(value, decimalPlace)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+    const currency = String(round(value, decimalPlace)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
 
     // FIXME
     switch (type) {
