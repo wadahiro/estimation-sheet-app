@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { RootState, AppState, Item, PurchaseItem, PurchaseDetailItem, UserData, Option, Currency, CostItem, CostRule, ValidationRule, ValidationResult } from '../reducers';
+import { RootState, AppState, Item, PurchaseItem, PurchaseDetailItem, UserData, Option, CostItem, CostRule, ValidationRule, ValidationResult } from '../reducers';
 
 const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
@@ -34,54 +34,68 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
     getPriceList, getPurchaseItems,
     (priceList, purchaseItems) => {
         return purchaseItems.map((x, index) => {
-            const item = priceList.find(y => y.itemId === x.itemId);
+            const item = priceList.find(y => {
+                return y.itemId === x.itemId;
+            });
 
             // Calc price
-            let sumPrice: Currency = {
-                type: item.price.type,
-                value: 0
-            };
-            let price: Currency = item.price;
+            const [price, sumPrice] = item.price.caseOf({
+                left: p => [p, p.multiply(x.quantity)],
+                right: calcPrice => {
+                    const sum = calcPrice(item, x.quantity);
 
-            // price
-            if (typeof item.dynamicPrice === 'function') {
-                sumPrice = item.dynamicPrice(item, x.quantity);
-                price = {
-                    type: sumPrice.type,
-                    value: sumPrice.value / x.quantity
-                };
-            } else {
-                sumPrice.value = item.price.value * (x.quantity || 0);
-            }
+                    // calc price from sumPrice because threr is no price definition
+                    const p = sum.divide(x.quantity);
+                    return [p, sum];
+                }
+            });
 
             // TODO
-            let sumCost: Currency = { type: 'JPY', value: 0 };
-            let supplierPrice: Currency = { type: 'JPY', value: 0 };
+            // let sumCost: Currency = { type: 'JPY', value: 0 };
+            // let supplierPrice: Currency = { type: 'JPY', value: 0 };
 
             // Calc cost
-            if (item.supplierPrice) {
-                sumCost = {
-                    type: item.supplierPrice.type,
-                    value: 0
-                };
-                if (item.supplierPrice.value === 0) {
-                    sumCost.value = sumPrice.value / 4;
-                } else {
-                    sumCost.value = item.supplierPrice.value * (x.quantity || 0);
-                }
+            const [supplierPrice, sumCost] = item.supplierPrice.caseOf({
+                left: sp => {
+                    if (sp.amount === 0) {
+                        return [sp, sumPrice.divide(4)];
+                    } else {
+                        return [sp, sp.multiply(x.quantity)];
+                    }
+                },
+                right: calcSupplierPrice => {
+                    const sum = calcSupplierPrice(item, x.quantity);
 
-                // supplierPrice
-                supplierPrice = item.supplierPrice;
-                if (typeof item.dynamicSupplierPrice === 'function') {
-                    sumCost = item.dynamicSupplierPrice(item, x.quantity);
-                    supplierPrice = {
-                        type: sumCost.type,
-                        value: sumCost.value / x.quantity
-                    };
+                    // calc supplierPrice from sumPrice because threr is no price definition
+                    const sp = sum.divide(x.quantity);
+                    return [sp, sum];
                 }
-            }
+            })
 
-            return <PurchaseDetailItem>Object.assign(item, x, {
+
+            // if (item.supplierPrice) {
+            //     sumCost = {
+            //         type: item.supplierPrice.type,
+            //         value: 0
+            //     };
+            //     if (item.supplierPrice.value === 0) {
+            //         sumCost.value = sumPrice.value / 4;
+            //     } else {
+            //         sumCost.value = item.supplierPrice.value * (x.quantity || 0);
+            //     }
+
+            //     // supplierPrice
+            //     supplierPrice = item.supplierPrice;
+            //     if (typeof item.dynamicSupplierPrice === 'function') {
+            //         sumCost = item.dynamicSupplierPrice(item, x.quantity);
+            //         supplierPrice = {
+            //             type: sumCost.type,
+            //             value: sumCost.value / x.quantity
+            //         };
+            //     }
+            // }
+
+            return Object.assign({}, item, x, {
                 sumPrice,
                 sumCost,
                 price,

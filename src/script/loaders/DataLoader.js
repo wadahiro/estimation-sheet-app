@@ -37,15 +37,15 @@ module.exports = function (text) {
             // price
             const price = Number(x.price);
             x.price = {
-                type: 'JPY',
-                value: applyDiscount(discountRate, price)
+                currency: 'JPY',
+                amount: applyDiscount(discountRate, price)
             };
 
             // supplierPrice
             const supplierPrice = Number(x.supplierPrice);
             x.supplierPrice = {
-                type: x.supplierPriceCurrency,
-                value: supplierPrice
+                currency: x.supplierPriceCurrency,
+                amount: supplierPrice
             };
             delete x['supplierPriceCurrency']
 
@@ -67,9 +67,9 @@ module.exports = function (text) {
                     // discount
                     const discountPrice = rule.discountPrice(x, price, discountRate, seller, exchangeRate);
 
-                    x.dynamicPrice = Function.call(null, `return function dynamicPrice(item, quantity) { var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
+                    x.price = Function.call(null, `return function calcPrice(item, quantity) { var Money = this; var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
 
-                    x.dynamicSupplierPrice = Function.call(null, `return function dynamicSupplierPrice(item, quantity) { var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
+                    x.supplierPrice = Function.call(null, `return function calcSupplierPrice(item, quantity) { var Money = this; var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
                 }
             });
 
@@ -98,8 +98,8 @@ module.exports = function (text) {
 
         const data = {
             price: priceList,
-            costRules: costRules,
-            validationRules: validationRules,
+            costRules: bindMoney(costRules),
+            validationRules: bindMoney(validationRules),
             showExchangeRate: showExchangeRate
         };
 
@@ -108,6 +108,13 @@ module.exports = function (text) {
         console.error(e)
         throw e;
     }
+}
+
+function bindMoney(rules) {
+    return rules.map(x => {
+        x.calc = Function.call(null, `return function calc(items) { var Money = this; return ${x.calc.toString()}(items)}`)();
+        return x;
+    });
 }
 
 function replacer(k, v) {

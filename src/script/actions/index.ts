@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 
-import { CurrencyType } from '../reducers';
+import { CurrencyType } from '../utils/Money';
 
 const { ActionCreators } = require('redux-undo');
 

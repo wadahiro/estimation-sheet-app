@@ -10,7 +10,8 @@ import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, getEnhancedCostItems, getValidationResults, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, ValidationResult, SavedHistory, UserData, Option, CurrencyType } from '../reducers';
+import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, ValidationResult, SavedHistory, UserData, Option } from '../reducers';
+import { CurrencyType } from '../utils/Money';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
 import { EstimationMetadata } from './EstimationMetadata';

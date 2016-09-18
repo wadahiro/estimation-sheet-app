@@ -4,7 +4,8 @@ import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import TextField from 'material-ui/TextField';
 
-import { CurrencyType, ExchangeRate } from '../reducers';
+import { ExchangeRate } from '../reducers';
+import { CurrencyType } from '../utils/Money';
 
 interface Props {
     value: ExchangeRate[];

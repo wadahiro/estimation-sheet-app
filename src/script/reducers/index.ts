@@ -1,7 +1,9 @@
 import { combineReducers } from 'redux';
+import { Maybe, Either } from 'tsmonad';
+import { Money, MoneyJSON, Currency, CurrencyType } from '../utils/Money';
 
 import * as Actions from '../actions';
-import { now } from '../components/Utils';
+import { now, round } from '../components/Utils';
 
 const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
@@ -53,24 +55,24 @@ export interface Option {
     onSale?: boolean;
 }
 
-export type CurrencyType = 'JPY' | 'USD';
-
-export interface Item {
+export interface BaseItem {
     id: string;
     itemId: string;
     name: string;
     menu: string;
     unit: string;
     quantity: number;
-
-    supplierPrice: Currency;
-    dynamicSupplierPrice?: (self: Item, quantity: number) => Currency;
-
-    price: Currency;
-    dynamicPrice?: (self: Item, quantity: number) => Currency;
-
     onSale: boolean;
+    aboutPrice: string;
+    comment: Maybe<string>;
 }
+
+export interface Item extends BaseItem {
+    supplierPrice: Either<Money, CalcPrice>;
+    price: Either<Money, CalcPrice>;
+}
+
+export type CalcPrice = (self: Item, quantity: number) => Money;
 
 export interface PurchaseItem {
     orderId: string;
@@ -78,16 +80,18 @@ export interface PurchaseItem {
     quantity: number;
 }
 
-export interface PurchaseDetailItem extends PurchaseItem, Item {
-    sumPrice: Currency;
-    sumCost: Currency;
+export interface PurchaseDetailItem extends BaseItem, PurchaseItem {
+    supplierPrice: Money;
+    price: Money;
+    sumCost: Money;
+    sumPrice: Money;
 }
 
 export interface CostItem {
     id: string;
     name: string;
-    supplierPrice: Currency;
-    price: Currency;
+    supplierPrice: Money;
+    price: Money;
 }
 
 export interface CostRule {
@@ -114,11 +118,6 @@ export interface UserData {
     };
     exchangeRate: ExchangeRate[];
     purchaseItems: PurchaseItem[];
-}
-
-export interface Currency {
-    type: CurrencyType;
-    value: number;
 }
 
 export interface ExchangeRate {
@@ -154,8 +153,8 @@ function init(): AppState {
 
         searchWord: null,
         priceList: initPriceList(PRICE_DATA.price),
-        costRules: PRICE_DATA.costRules,
-        validationRules: PRICE_DATA.validationRules,
+        costRules: bindMoney(PRICE_DATA.costRules),
+        validationRules: bindMoney(PRICE_DATA.validationRules),
 
         showExchangeRate: PRICE_DATA.showExchangeRate,
 
@@ -164,16 +163,35 @@ function init(): AppState {
     };
 }
 
-function initPriceList(list: Item[]): Item[] {
-    return list.map(x => {
-        // if (x.dynamicPrice) {
-        //     x.dynamicPrice = Function.call(null, 'return ' + x.dynamicPrice)();
-        // }
-        // if (x.dynamicSupplierPrice) {
-        //     x.dynamicSupplierPrice = Function.call(null, 'return ' + x.dynamicSupplierPrice)();
-        // }
+function bindMoney(rules) {
+    const { Money } = require('../utils/Money');
+    return rules.map(x => {
+        x.calc = x.calc.bind(Money);
         return x;
     });
+}
+
+function initPriceList(list: any[]): Item[] {
+    const { Money } = require('../utils/Money');
+
+    return list.map(x => {
+        const item = Object.assign({}, x);
+        if (typeof x.price === 'function') {
+            item.price = Either.right<Money, CalcPrice>(x.price.bind(Money));
+        } else {
+            item.price = Either.left<Money, CalcPrice>(toMoney(x.price));
+        }
+        if (typeof x.supplierPrice === 'function') {
+            item.supplierPrice = Either.right<Money, CalcPrice>(x.supplierPrice.bind(Money));
+        } else {
+            item.supplierPrice = Either.left<Money, CalcPrice>(toMoney(x.supplierPrice));
+        }
+        return item;
+    });
+}
+
+function toMoney(json: MoneyJSON): Money {
+    return new Money(round(json.amount, 0), json.currency);
 }
 
 export const appStateReducer = (state: AppState = init(), action: Actions.Actions) => {
