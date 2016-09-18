@@ -234,7 +234,6 @@ class App extends React.Component<Props, State> {
                             onChangeQuantity={this.changeQuantity}
                             onDeleteItem={this.deleteItem}
                             exchangeRate={userData.exchangeRate}
-                            mainCurrency={userData.mainCurrency}
                             />
                     </Row>
                 </Grid>
@@ -247,7 +246,6 @@ class App extends React.Component<Props, State> {
                             <Row className={style.row}>
                                 <CostItems costItems={costItems}
                                     exchangeRate={userData.exchangeRate}
-                                    mainCurrency={userData.mainCurrency}
                                     />
                             </Row>
                         </Grid>
@@ -259,7 +257,7 @@ class App extends React.Component<Props, State> {
                 }
 
                 {this.state.showExchangeRateDialog &&
-                    <ExchangeRateDialog value={userData.exchangeRate} onChangeRate={this.changeExchangeRate}
+                    <ExchangeRateDialog exchangeRate={userData.exchangeRate} onChangeRate={this.changeExchangeRate}
                         showExchangeRate={showExchangeRate} onClose={this.closeExchangeRateDialog} />
                 }
             </div >

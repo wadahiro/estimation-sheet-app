@@ -17,8 +17,7 @@ interface Props {
     purchaseDetailItems?: PurchaseDetailItem[];
     onChangeQuantity: (itemId: string, newQuantity: number) => void;
     onDeleteItem: (itemId: string) => void;
-    exchangeRate: ExchangeRate[];
-    mainCurrency: CurrencyType;
+    exchangeRate: ExchangeRate;
 }
 
 export class PurchaseItems extends React.Component<Props, void> {
@@ -61,10 +60,10 @@ export class PurchaseItems extends React.Component<Props, void> {
     };
 
     renderPrice = (item: PurchaseDetailItem) => {
-        const { exchangeRate, mainCurrency } = this.props;
+        const { exchangeRate } = this.props;
 
-        const sumPrice = formatCurrency(item.sumPrice, exchangeRate, mainCurrency);
-        const price = formatCurrency(item.price, exchangeRate, mainCurrency, 3);
+        const sumPrice = formatCurrency(item.sumPrice, exchangeRate);
+        const price = formatCurrency(item.price, exchangeRate, 3);
 
         if (item.quantity > 1) {
             return <span>

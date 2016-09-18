@@ -14,16 +14,15 @@ const style = require('./style.css');
 
 interface Props {
     costItems?: CostItem[];
-    exchangeRate: ExchangeRate[];
-    mainCurrency: CurrencyType;
+    exchangeRate: ExchangeRate;
 }
 
 export class CostItems extends React.Component<Props, void> {
 
     renderPrice = (item: CostItem) => {
-        const { exchangeRate, mainCurrency } = this.props;
+        const { exchangeRate } = this.props;
 
-        const price = formatCurrency(item.price, exchangeRate, mainCurrency);
+        const price = formatCurrency(item.price, exchangeRate);
 
         return this.renderMultiValues(price);
     };

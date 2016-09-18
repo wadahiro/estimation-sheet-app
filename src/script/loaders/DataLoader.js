@@ -17,11 +17,10 @@ module.exports = function (text) {
         const rows = query.rows;
         const res = rows ? dsv.parseRows(text) : dsv.parse(text);
 
-        const exchangeRate = buildSettings.exchangeRate[0].rate;
-
         const currentBuildSettings = buildSettings.sellers.find(x => x.name === seller);
 
         const priceRules = getConfig(buildSettings, currentBuildSettings, 'priceRules');
+        const exchangeRate = getConfig(buildSettings, currentBuildSettings, 'exchangeRate');
 
         const priceList = res.map((x, index) => {
             x.id = (index + 1) + '';
@@ -94,15 +93,13 @@ module.exports = function (text) {
         const costRules = getConfig(buildSettings, currentBuildSettings, 'costRules');
         const validationRules = getConfig(buildSettings, currentBuildSettings, 'validationRules');
         const showExchangeRate = getConfig(buildSettings, currentBuildSettings, 'showExchangeRate');
-        const mainCurrency = getConfig(buildSettings, currentBuildSettings, 'mainCurrency');
-
 
         const data = {
             price: priceList,
             costRules: bindMoney(costRules),
             validationRules: bindMoney(validationRules),
+            exchangeRate: exchangeRate,
             showExchangeRate: showExchangeRate,
-            mainCurrency: showExchangeRate,
         };
 
         return `module.exports = ${serialize(data)};`;

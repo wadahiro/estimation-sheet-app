@@ -7,7 +7,7 @@ import TextField from 'material-ui/TextField';
 import { CurrencyPair, ExchangeRate } from '../utils/Money';
 
 interface Props {
-    value: ExchangeRate[];
+    exchangeRate: ExchangeRate;
     onChangeRate: (type: CurrencyPair, rate: number) => void;
     showExchangeRate: CurrencyPair[];
     onClose: () => void;
@@ -49,14 +49,14 @@ export class ExchangeRateDialog extends React.Component<Props, void> {
     }
 
     renderColumns() {
-        const { value, showExchangeRate } = this.props;
+        const { exchangeRate, showExchangeRate } = this.props;
 
-        return value
-            .filter(x => showExchangeRate.find(y => y === x.currencyPair) !== undefined)
+        return exchangeRate.pairs
+            .filter(x => showExchangeRate.find(y => y === x.pair) !== undefined)
             .map(x => {
                 return (
                     <div>
-                        <TextField floatingLabelText={x.currencyPair} value={x.rate} onChange={this.handleChangeRate(x.currencyPair)} />
+                        <TextField floatingLabelText={x.pair} value={x.rate} onChange={this.handleChangeRate(x.pair)} />
                     </div>
                 );
             });

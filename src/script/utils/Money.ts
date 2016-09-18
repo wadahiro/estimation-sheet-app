@@ -31,7 +31,12 @@ export interface MoneyJSON {
 }
 
 export interface ExchangeRate {
-    currencyPair: CurrencyPair;
+    main: CurrencyType;
+    pairs: ExchangeRatePair[];
+}
+
+export interface ExchangeRatePair {
+    pair: CurrencyPair;
     rate: number;
 }
 
@@ -108,25 +113,19 @@ export class Money extends BaseCurrency {
         return 0 >= this.compare(money);
     }
 
-    exchange(exchangeRate: ExchangeRate | ExchangeRate[], targetCurrency: CurrencyType = 'JPY'): Money {
-        if (this.currency === targetCurrency) {
+    exchange(exchangeRate: ExchangeRate): Money {
+        if (this.currency === exchangeRate.main) {
             return this;
         }
 
-        let targetRate: ExchangeRate;
-        if (Array.isArray(exchangeRate)) {
-            targetRate = exchangeRate.find(x => canExchange(this.currency, x, targetCurrency));
-        } else {
-            targetRate = exchangeRate;
-        }
-
-        if (!targetRate || !canExchange(this.currency, targetRate, targetCurrency)) {
+        const targetRate = exchangeRate.pairs.find(x => canExchange(this.currency, x, exchangeRate.main));
+        if (!targetRate) {
             // cannot exchange
             throw `Cannot exchange because of no exchange rate against ${this.currency}`;
         }
 
         const amount = this.amount * targetRate.rate;
-        return new Money(amount, targetCurrency);
+        return new Money(amount, exchangeRate.main);
     }
 
     format(decimalPlace: number = Money[this.currency].decimal_digits, fn: typeof round = round): string {
@@ -135,8 +134,8 @@ export class Money extends BaseCurrency {
     }
 }
 
-function canExchange(currency: CurrencyType, exchangeRate: ExchangeRate, targetCurrency: CurrencyType) {
-    const pair = exchangeRate.currencyPair.split('/');
+function canExchange(currency: CurrencyType, exchangeRate: ExchangeRatePair, targetCurrency: CurrencyType) {
+    const pair = exchangeRate.pair.split('/');
     return pair[0] === currency && pair[1] === targetCurrency;
 }
 

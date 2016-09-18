@@ -116,8 +116,7 @@ export interface UserData {
     estimationMetadata: {
         [index: string]: string;
     };
-    exchangeRate: ExchangeRate[];
-    mainCurrency: CurrencyType;
+    exchangeRate: ExchangeRate;
     purchaseItems: PurchaseItem[];
 }
 
@@ -133,8 +132,7 @@ function init(): AppState {
     let userData: UserData = {
         date: '',
         estimationMetadata: {},
-        exchangeRate: process.env.EXCHANGE_RATE,
-        mainCurrency: PRICE_DATA.mainCurrency,
+        exchangeRate: PRICE_DATA.exchangeRate,
         purchaseItems: []
     };
 
@@ -254,13 +252,15 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
             return Object.assign({}, state, {
                 userData: Object.assign({}, state.userData, {
                     date: now(),
-                    exchangeRate: state.userData.exchangeRate.map(x => {
-                        if (x.currencyPair === action.payload.currencyPair) {
-                            return Object.assign({}, x, {
-                                rate: action.payload.rate
-                            });
-                        }
-                        return x;
+                    exchangeRate: Object.assign({}, state.userData.exchangeRate, {
+                        pairs: state.userData.exchangeRate.pairs.map(x => {
+                            if (x.pair === action.payload.pair) {
+                                return Object.assign({}, x, {
+                                    rate: action.payload.rate
+                                });
+                            }
+                            return x;
+                        })
                     })
                 })
             });

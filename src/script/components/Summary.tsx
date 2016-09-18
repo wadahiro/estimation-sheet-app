@@ -11,7 +11,7 @@ interface Props {
     columns: Column[];
     purchaseDetailItems?: PurchaseDetailItem[];
     costItems?: CostItem[];
-    exchangeRate: ExchangeRate[];
+    exchangeRate: ExchangeRate;
 }
 
 export class Summary extends React.Component<Props, void> {

@@ -5,7 +5,6 @@ const getPriceList = (state: RootState) => state.app.present.priceList;
 const getPurchaseItems = (state: RootState) => state.app.present.userData.purchaseItems;
 const getCostRules = (state: RootState) => state.app.present.costRules;
 const getValidationRules = (state: RootState) => state.app.present.validationRules;
-const getExchangeRate = (state: RootState) => state.app.present.userData.exchangeRate;
 const getPresentAppState = (state: RootState) => state.app.present;
 
 export const getVisiblePriceList = createSelector<RootState, Item[], Item[], PurchaseItem[]>(
