@@ -6,8 +6,9 @@ import TextField from 'material-ui/TextField';
 import IconButton from 'material-ui/IconButton';
 import Delete from 'material-ui/svg-icons/action/delete';
 
-import { RootState, Column, PurchaseDetailItem, ExchangeRate } from '../reducers';
-import { format, formatCurrency, exchangeCurrency } from './Utils';
+import { RootState, Column, PurchaseDetailItem } from '../reducers';
+import { ExchangeRate } from '../utils/Money';
+import { format, formatCurrency } from './Utils';
 
 const style = require('./style.css');
 
@@ -131,7 +132,7 @@ export class PurchaseItems extends React.Component<Props, void> {
                                 <TableRow key={x.id} selectable={false}>
                                     <TableRowColumn style={idColStyle}>{x.id}</TableRowColumn>
                                     {columns.map(y => {
-                                        const value = format(y.type, x[y.name], exchangeRate);
+                                        const value = format(y.type, x[y.name], exchangeRate, y.decimalPlace);
 
                                         if (Array.isArray(value)) {
                                             return (

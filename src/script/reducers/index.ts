@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux';
 import { Maybe, Either } from 'tsmonad';
-import { Money, MoneyJSON, Currency, CurrencyType } from '../utils/Money';
+import { Money, MoneyJSON, CurrencyType, ExchangeRate, round } from '../utils/Money';
 
 import * as Actions from '../actions';
-import { now, round } from '../components/Utils';
+import { now } from '../components/Utils';
 
 const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
@@ -118,11 +118,6 @@ export interface UserData {
     };
     exchangeRate: ExchangeRate[];
     purchaseItems: PurchaseItem[];
-}
-
-export interface ExchangeRate {
-    type: CurrencyType;
-    rate: number;
 }
 
 // for test server
@@ -258,7 +253,7 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 userData: Object.assign({}, state.userData, {
                     date: now(),
                     exchangeRate: state.userData.exchangeRate.map(x => {
-                        if (x.type === action.payload.type) {
+                        if (x.currency === action.payload.currency) {
                             return Object.assign({}, x, {
                                 rate: action.payload.rate
                             });

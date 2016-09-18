@@ -4,8 +4,7 @@ import Paper from 'material-ui/Paper';
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import TextField from 'material-ui/TextField';
 
-import { ExchangeRate } from '../reducers';
-import { CurrencyType } from '../utils/Money';
+import { CurrencyType, ExchangeRate } from '../utils/Money';
 
 interface Props {
     value: ExchangeRate[];
@@ -48,12 +47,12 @@ export class ExchangeRateBox extends React.Component<Props, void> {
                         </TableRow>
                     </TableHeader>
                     <TableBody displayRowCheckbox={false}>
-                        {value.filter(x => showExchangeRate.find(y => y === x.type) !== undefined).map(x => {
+                        {value.filter(x => showExchangeRate.find(y => y === x.currency) !== undefined).map(x => {
                             return (
                                 <TableRow selectable={false} style={rowStyle}>
-                                    <TableRowColumn style={columnStyle}>{x.type}</TableRowColumn>
+                                    <TableRowColumn style={columnStyle}>{x.currency}</TableRowColumn>
                                     <TableRowColumn style={columnStyle}>
-                                        <TextField fullWidth value={x.rate} onChange={this.handleChangeRate(x.type)} />
+                                        <TextField fullWidth value={x.rate} onChange={this.handleChangeRate(x.currency)} />
                                     </TableRowColumn>
                                 </TableRow>
                             );

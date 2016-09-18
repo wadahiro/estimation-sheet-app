@@ -111,15 +111,15 @@ export function modifyMetadata(value: { [index: string]: string }): ModifyMetada
 export interface ModifyExchangeRate extends Action {
     type: 'MOD_EXCHANGE_RATE';
     payload: {
-        type: CurrencyType,
+        currency: CurrencyType,
         rate: number;
     };
 }
-export function modifyExchangeRate(type: CurrencyType, rate: number): ModifyExchangeRate {
+export function modifyExchangeRate(currency: CurrencyType, rate: number): ModifyExchangeRate {
     return {
         type: 'MOD_EXCHANGE_RATE',
         payload: {
-            type,
+            currency,
             rate
         }
     };

@@ -6,8 +6,9 @@ import TextField from 'material-ui/TextField';
 import IconButton from 'material-ui/IconButton';
 import Delete from 'material-ui/svg-icons/action/delete';
 
-import { RootState, Column, PurchaseDetailItem, CostItem, ExchangeRate } from '../reducers';
-import { format, formatCurrency, exchangeCurrency } from './Utils';
+import { RootState, Column, PurchaseDetailItem, CostItem } from '../reducers';
+import { ExchangeRate } from '../utils/Money';
+import { format, formatCurrency } from './Utils';
 
 const style = require('./style.css');
 

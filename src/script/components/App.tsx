@@ -76,8 +76,8 @@ class App extends React.Component<Props, State> {
         this.props.dispatch(Actions.deleteItem(itemId));
     };
 
-    changeExchangeRate = (type: CurrencyType, rate: number) => {
-        this.props.dispatch(Actions.modifyExchangeRate(type, rate));
+    changeExchangeRate = (currency: CurrencyType, rate: number) => {
+        this.props.dispatch(Actions.modifyExchangeRate(currency, rate));
     };
 
     openDrawer = (e) => {
