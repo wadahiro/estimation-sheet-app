@@ -45,7 +45,7 @@ export class EstimationMetadata extends React.Component<Props, void> {
             padding: 0
         };
 
-        const colSize = 4;
+        const colSize = 6;
         const data = columns.reduce<{ name: string, value: string, type: string }[]>((s, x, index) => {
             const labelData = { name: x.name, value: x.label, type: 'label' };
             const valueData = { name: x.name, value: value[x.name], type: 'value' };
