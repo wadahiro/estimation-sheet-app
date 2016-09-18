@@ -7,16 +7,16 @@ export function toPercentage(rate: number): string {
     return `${round(rate * 100, 2)} %`;
 }
 
-export function formatCurrency(value: Money, exchangeRate: ExchangeRate[], decimalPlace?): string[] {
+export function formatCurrency(value: Money, exchangeRate: ExchangeRate[], mainCurrency: CurrencyType, decimalPlace?): string[] {
     let resolvedValue: string[];
     resolvedValue = [value.format(decimalPlace)];
 
     // TODO parameterize 'JPY'
     if (value.currency !== 'JPY') {
-        const mainCurrency = value.exchange(exchangeRate);
-        const mainCurrencyFormatted = mainCurrency.format(decimalPlace);
+        const exchanged = value.exchange(exchangeRate, mainCurrency);
+        const exchangedFormatted = exchanged.format(decimalPlace);
 
-        resolvedValue = [mainCurrencyFormatted, resolvedValue[0]];
+        resolvedValue = [exchangedFormatted, resolvedValue[0]];
     }
     return resolvedValue;
 }

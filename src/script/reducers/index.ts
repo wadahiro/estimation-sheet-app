@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 import { Maybe, Either } from 'tsmonad';
-import { Money, MoneyJSON, CurrencyPair, ExchangeRate, round } from '../utils/Money';
+import { Money, MoneyJSON, CurrencyType, CurrencyPair, ExchangeRate, round } from '../utils/Money';
 
 import * as Actions from '../actions';
 import { now } from '../components/Utils';
@@ -117,6 +117,7 @@ export interface UserData {
         [index: string]: string;
     };
     exchangeRate: ExchangeRate[];
+    mainCurrency: CurrencyType;
     purchaseItems: PurchaseItem[];
 }
 
@@ -133,6 +134,7 @@ function init(): AppState {
         date: '',
         estimationMetadata: {},
         exchangeRate: process.env.EXCHANGE_RATE,
+        mainCurrency: PRICE_DATA.mainCurrency,
         purchaseItems: []
     };
 

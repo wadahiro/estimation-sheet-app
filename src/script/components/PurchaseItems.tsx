@@ -7,7 +7,7 @@ import IconButton from 'material-ui/IconButton';
 import Delete from 'material-ui/svg-icons/action/delete';
 
 import { RootState, Column, PurchaseDetailItem } from '../reducers';
-import { ExchangeRate } from '../utils/Money';
+import { ExchangeRate, CurrencyType } from '../utils/Money';
 import { format, formatCurrency } from './Utils';
 
 const style = require('./style.css');
@@ -18,6 +18,7 @@ interface Props {
     onChangeQuantity: (itemId: string, newQuantity: number) => void;
     onDeleteItem: (itemId: string) => void;
     exchangeRate: ExchangeRate[];
+    mainCurrency: CurrencyType;
 }
 
 export class PurchaseItems extends React.Component<Props, void> {
@@ -60,10 +61,10 @@ export class PurchaseItems extends React.Component<Props, void> {
     };
 
     renderPrice = (item: PurchaseDetailItem) => {
-        const { exchangeRate } = this.props;
+        const { exchangeRate, mainCurrency } = this.props;
 
-        const sumPrice = formatCurrency(item.sumPrice, exchangeRate);
-        const price = formatCurrency(item.price, exchangeRate, 3);
+        const sumPrice = formatCurrency(item.sumPrice, exchangeRate, mainCurrency);
+        const price = formatCurrency(item.price, exchangeRate, mainCurrency, 3);
 
         if (item.quantity > 1) {
             return <span>

@@ -7,7 +7,7 @@ import IconButton from 'material-ui/IconButton';
 import Delete from 'material-ui/svg-icons/action/delete';
 
 import { RootState, Column, PurchaseDetailItem, CostItem } from '../reducers';
-import { ExchangeRate } from '../utils/Money';
+import { ExchangeRate, CurrencyType } from '../utils/Money';
 import { format, formatCurrency } from './Utils';
 
 const style = require('./style.css');
@@ -15,14 +15,15 @@ const style = require('./style.css');
 interface Props {
     costItems?: CostItem[];
     exchangeRate: ExchangeRate[];
+    mainCurrency: CurrencyType;
 }
 
 export class CostItems extends React.Component<Props, void> {
 
     renderPrice = (item: CostItem) => {
-        const { exchangeRate } = this.props;
+        const { exchangeRate, mainCurrency } = this.props;
 
-        const price = formatCurrency(item.price, exchangeRate);
+        const price = formatCurrency(item.price, exchangeRate, mainCurrency);
 
         return this.renderMultiValues(price);
     };

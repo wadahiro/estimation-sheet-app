@@ -20,7 +20,8 @@ module.exports = function (text) {
         const exchangeRate = buildSettings.exchangeRate[0].rate;
 
         const currentBuildSettings = buildSettings.sellers.find(x => x.name === seller);
-        const priceRules = (currentBuildSettings && currentBuildSettings.priceRules) ? currentBuildSettings.priceRules : buildSettings.default.priceRules;
+
+        const priceRules = getConfig(buildSettings, currentBuildSettings, 'priceRules');
 
         const priceList = res.map((x, index) => {
             x.id = (index + 1) + '';
@@ -90,17 +91,18 @@ module.exports = function (text) {
             return x;
         });
 
-        const showExchangeRate = (currentBuildSettings && currentBuildSettings.exchangeRate) ? currentBuildSettings.exchangeRate : buildSettings.default.exchangeRate;
+        const costRules = getConfig(buildSettings, currentBuildSettings, 'costRules');
+        const validationRules = getConfig(buildSettings, currentBuildSettings, 'validationRules');
+        const showExchangeRate = getConfig(buildSettings, currentBuildSettings, 'showExchangeRate');
+        const mainCurrency = getConfig(buildSettings, currentBuildSettings, 'mainCurrency');
 
-        const costRules = (currentBuildSettings && currentBuildSettings.costRules) ? currentBuildSettings.costRules : buildSettings.default.costRules;
-
-        const validationRules = (currentBuildSettings && currentBuildSettings.validationRules) ? currentBuildSettings.validationRules : buildSettings.default.validationRules;
 
         const data = {
             price: priceList,
             costRules: bindMoney(costRules),
             validationRules: bindMoney(validationRules),
-            showExchangeRate: showExchangeRate
+            showExchangeRate: showExchangeRate,
+            mainCurrency: showExchangeRate,
         };
 
         return `module.exports = ${serialize(data)};`;
@@ -108,6 +110,10 @@ module.exports = function (text) {
         console.error(e)
         throw e;
     }
+}
+
+function getConfig(defaultSettings, currentSettings, key) {
+    return (currentSettings && currentSettings[key]) ? currentSettings[key] : defaultSettings.default[key];
 }
 
 function bindMoney(rules) {
