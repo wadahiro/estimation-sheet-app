@@ -3,14 +3,18 @@ import * as React from 'react';
 import AppBar from 'material-ui/AppBar';
 import IconButton from 'material-ui/IconButton';
 import FileDownload from 'material-ui/svg-icons/file/file-download';
+import CurrencyIcon from 'material-ui/svg-icons/editor/attach-money';
 
 import { UserData } from '../reducers';
+import { CurrencyPair } from '../utils/Money';
 
 interface Props {
     userData: UserData;
+    onClickCurrency: (e: any) => void;
     onClickMenu: (e: any) => void;
     onClickSave: (e: any) => void;
     editing: boolean;
+    showExchangeRate: CurrencyPair[];
 }
 
 export class NavBar extends React.Component<Props, void> {
@@ -36,6 +40,11 @@ export class NavBar extends React.Component<Props, void> {
         return (
             <AppBar title={this.getTitle()} iconElementRight={
                 <div>
+                    {this.props.showExchangeRate.length > 0 &&
+                        <IconButton onClick={this.props.onClickCurrency}>
+                            <CurrencyIcon color='#FFF' />
+                        </IconButton>
+                    }
                     <IconButton onClick={this.props.onClickSave}>
                         <FileDownload color='#FFF' />
                     </IconButton>

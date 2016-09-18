@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 
-import { CurrencyType } from '../utils/Money';
+import { CurrencyPair } from '../utils/Money';
 
 const { ActionCreators } = require('redux-undo');
 
@@ -111,15 +111,15 @@ export function modifyMetadata(value: { [index: string]: string }): ModifyMetada
 export interface ModifyExchangeRate extends Action {
     type: 'MOD_EXCHANGE_RATE';
     payload: {
-        currency: CurrencyType,
+        currencyPair: CurrencyPair,
         rate: number;
     };
 }
-export function modifyExchangeRate(currency: CurrencyType, rate: number): ModifyExchangeRate {
+export function modifyExchangeRate(currencyPair: CurrencyPair, rate: number): ModifyExchangeRate {
     return {
         type: 'MOD_EXCHANGE_RATE',
         payload: {
-            currency,
+            currencyPair,
             rate
         }
     };

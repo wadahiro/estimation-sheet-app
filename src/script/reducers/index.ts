@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 import { Maybe, Either } from 'tsmonad';
-import { Money, MoneyJSON, CurrencyType, ExchangeRate, round } from '../utils/Money';
+import { Money, MoneyJSON, CurrencyPair, ExchangeRate, round } from '../utils/Money';
 
 import * as Actions from '../actions';
 import { now } from '../components/Utils';
@@ -29,7 +29,7 @@ export interface AppState {
     priceList: Item[];
     costRules: CostRule[];
     validationRules: ValidationRule[];
-    showExchangeRate: CurrencyType[];
+    showExchangeRate: CurrencyPair[];
 
     searchWord: string;
 
@@ -253,7 +253,7 @@ export const appStateReducer = (state: AppState = init(), action: Actions.Action
                 userData: Object.assign({}, state.userData, {
                     date: now(),
                     exchangeRate: state.userData.exchangeRate.map(x => {
-                        if (x.currency === action.payload.currency) {
+                        if (x.currencyPair === action.payload.currencyPair) {
                             return Object.assign({}, x, {
                                 rate: action.payload.rate
                             });

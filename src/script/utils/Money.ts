@@ -31,9 +31,11 @@ export interface MoneyJSON {
 }
 
 export interface ExchangeRate {
-    currency: CurrencyType;
+    currencyPair: CurrencyPair;
     rate: number;
 }
+
+export type CurrencyPair = 'USD/JPY' | 'JPY/USD';
 
 export type CurrencyType = 'USD' | 'JPY';
 
@@ -106,32 +108,36 @@ export class Money extends BaseCurrency {
         return 0 >= this.compare(money);
     }
 
-    exchange(exchangeRate: ExchangeRate | ExchangeRate[]): Money {
-        // TODO currently, support JPY only. support other currency?
-        if (this.currency === 'JPY') {
+    exchange(exchangeRate: ExchangeRate | ExchangeRate[], targetCurrency: CurrencyType = 'JPY'): Money {
+        if (this.currency === targetCurrency) {
             return this;
         }
 
-        let target: ExchangeRate;
+        let targetRate: ExchangeRate;
         if (Array.isArray(exchangeRate)) {
-            target = exchangeRate.find(x => x.currency === this.currency);
+            targetRate = exchangeRate.find(x => canExchange(this.currency, x, targetCurrency));
         } else {
-            target = exchangeRate;
+            targetRate = exchangeRate;
         }
 
-        if (!target || this.currency !== target.currency) {
+        if (!targetRate || !canExchange(this.currency, targetRate, targetCurrency)) {
             // cannot exchange
             throw `Cannot exchange because of no exchange rate against ${this.currency}`;
         }
 
-        const amount = this.amount * target.rate;
-        return new Money(amount, 'JPY');
+        const amount = this.amount * targetRate.rate;
+        return new Money(amount, targetCurrency);
     }
 
     format(decimalPlace: number = Money[this.currency].decimal_digits, fn: typeof round = round): string {
         const formatted = String(fn(this.amount, decimalPlace)).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
         return `${Money[this.currency].symbol_native} ${formatted}`;
     }
+}
+
+function canExchange(currency: CurrencyType, exchangeRate: ExchangeRate, targetCurrency: CurrencyType) {
+    const pair = exchangeRate.currencyPair.split('/');
+    return pair[0] === currency && pair[1] === targetCurrency;
 }
 
 export function floor(num: number, n: number) {

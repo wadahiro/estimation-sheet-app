@@ -11,16 +11,16 @@ import Divider from 'material-ui/Divider';
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, getEnhancedCostItems, getValidationResults, isEditing, getCurrentSavedHistory } from '../selectors';
 import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, ValidationResult, SavedHistory, UserData, Option } from '../reducers';
-import { CurrencyType } from '../utils/Money';
+import { CurrencyPair } from '../utils/Money';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
 import { EstimationMetadata } from './EstimationMetadata';
 import { Summary } from './Summary';
-import { ExchangeRateBox } from './ExchangeRateBox';
 import { PurchaseItems } from './PurchaseItems';
 import { CostItems } from './CostItems';
 import { HistoryMenu } from './HistoryMenu';
 import { EditEstimationMetadataDialog } from './EditEstimationMetadataDialog';
+import { ExchangeRateDialog } from './ExchangeRateDialog';
 import { save } from './Utils';
 
 const style = require('./style.css');
@@ -41,7 +41,7 @@ interface Props {
     costItems?: CostItem[],
     validationResults?: ValidationResult[],
 
-    showExchangeRate?: CurrencyType[],
+    showExchangeRate?: CurrencyPair[],
 
     userData?: UserData,
 
@@ -52,12 +52,14 @@ interface Props {
 interface State {
     showDialog?: boolean;
     showDrawer?: boolean;
+    showExchangeRateDialog?: boolean;
 }
 
 class App extends React.Component<Props, State> {
     state = {
         showDialog: false,
-        showDrawer: false
+        showDrawer: false,
+        showExchangeRateDialog: false
     };
 
     addItem = (itemId: string) => {
@@ -76,8 +78,21 @@ class App extends React.Component<Props, State> {
         this.props.dispatch(Actions.deleteItem(itemId));
     };
 
-    changeExchangeRate = (currency: CurrencyType, rate: number) => {
-        this.props.dispatch(Actions.modifyExchangeRate(currency, rate));
+    changeExchangeRate = (currencyPair: CurrencyPair, rate: number) => {
+        this.props.dispatch(Actions.modifyExchangeRate(currencyPair, rate));
+    };
+
+    openExchangeRateDialog = (e) => {
+        e.preventDefault();
+        this.setState({
+            showExchangeRateDialog: true
+        });
+    };
+
+    closeExchangeRateDialog = () => {
+        this.setState({
+            showExchangeRateDialog: false
+        });
     };
 
     openDrawer = (e) => {
@@ -160,9 +175,11 @@ class App extends React.Component<Props, State> {
         return (
             <div>
                 <NavBar userData={userData}
+                    onClickCurrency={this.openExchangeRateDialog}
                     onClickMenu={this.openDrawer}
                     onClickSave={this.save}
-                    editing={editing} />
+                    editing={editing}
+                    showExchangeRate={showExchangeRate} />
 
                 <Drawer open={this.state.showDrawer}
                     docked={false}
@@ -173,12 +190,8 @@ class App extends React.Component<Props, State> {
 
                 <Grid className={style.grid}>
                     <Row className={style.row}>
-                        <Col xs={6}>
+                        <Col xs={8}>
                             <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} onEdit={this.openDialog} />
-                        </Col>
-                        <Col xs={2}>
-                            <ExchangeRateBox value={userData.exchangeRate} onChangeRate={this.changeExchangeRate}
-                                showExchangeRate={showExchangeRate} />
                         </Col>
                         <Col xs={4}>
                             <Summary columns={summaryColumns}
@@ -241,6 +254,11 @@ class App extends React.Component<Props, State> {
 
                 {this.state.showDialog &&
                     <EditEstimationMetadataDialog columns={estimationMetadataColumns} defaultValue={userData.estimationMetadata} onSave={this.changeMetadata} onClose={this.closeDialog} />
+                }
+
+                {this.state.showExchangeRateDialog &&
+                    <ExchangeRateDialog value={userData.exchangeRate} onChangeRate={this.changeExchangeRate}
+                        showExchangeRate={showExchangeRate} onClose={this.closeExchangeRateDialog} />
                 }
             </div >
         );
