@@ -102,7 +102,7 @@ class App extends React.Component<Props, State> {
         });
     };
 
-    openDialog = (e) => {
+    openMetadataDialog = (e) => {
         e.preventDefault();
         this.setState({
             showDialog: true
@@ -175,6 +175,7 @@ class App extends React.Component<Props, State> {
         return (
             <div>
                 <NavBar userData={userData}
+                    onClickCreate={this.openMetadataDialog}
                     onClickCurrency={this.openExchangeRateDialog}
                     onClickMenu={this.openDrawer}
                     onClickSave={this.save}
@@ -188,10 +189,28 @@ class App extends React.Component<Props, State> {
                     <HistoryMenu columns={estimationMetadataColumns} history={savedHistory} goto={this.restoreSavedHistory} />
                 </Drawer>
 
-                <Grid className={style.grid}>
+                {/* for print */}
+                <Grid className={style.printGrid}>
                     <Row className={style.row}>
                         <Col xs={8}>
-                            <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} onEdit={this.openDialog} />
+                            <EstimationMetadata columns={estimationMetadataColumns} value={userData.estimationMetadata} onEdit={this.openMetadataDialog} />
+                        </Col>
+                        <Col xs={4}>
+                            <Summary columns={summaryColumns}
+                                purchaseDetailItems={purchaseDetailItems}
+                                costItems={costItems}
+                                exchangeRate={userData.exchangeRate} />
+                        </Col>
+                    </Row>
+                </Grid>
+
+                <Grid className={style.noPrintGrid}>
+                    <Row className={style.row}>
+                        <Col xs={8}>
+                            <SearchBox value={searchWord}
+                                options={priceList}
+                                onValueChange={this.addItem}
+                                onChangeSearchWord={this.searchItem} />
                         </Col>
                         <Col xs={4}>
                             <Summary columns={summaryColumns}
@@ -205,14 +224,6 @@ class App extends React.Component<Props, State> {
                 <Divider />
 
                 <Grid className={style.grid}>
-                    <Row className={style.row}>
-                        <Col xs={12}>
-                            <SearchBox value={searchWord}
-                                options={priceList}
-                                onValueChange={this.addItem}
-                                onChangeSearchWord={this.searchItem} />
-                        </Col>
-                    </Row>
                     <Row className={style.row}>
                         <Col xs={12}>
                             {validationResults.length > 0 &&
