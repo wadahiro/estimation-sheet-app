@@ -33,6 +33,7 @@ export interface AppState {
     purchaseItemsColumns: Column[];
 
     priceList: Item[];
+    priceChangeHistory: ChangeHistory<Item>[];
     costRules: CostRule[];
     validationRules: ValidationRule[];
     showExchangeRate: CurrencyPair[];
@@ -41,6 +42,35 @@ export interface AppState {
 
     userData: UserData;
     savedHistory: UserData[];
+}
+
+export interface ChangeHistory<T> {
+    id: string;
+    fromDate: string;
+    toDate: string;
+    diff: {
+        title: string;
+        subTitle: string;
+        op: PatchOperation<T>;
+    }[];
+}
+
+export type PatchOperation<T> = AddOperation<T> | ReplaceOperation
+
+export interface AddOperation<T> {
+    op: 'add';
+    path: string;
+    value: T
+}
+export interface ReplaceOperation {
+    op: 'replace';
+    path: string;
+    value: string | number;
+}
+export interface RemoveOperation {
+    op: 'remove';
+    path: string;
+    value: string | number;
 }
 
 export interface Column {
@@ -154,6 +184,8 @@ function init(): AppState {
 
         searchWord: null,
         priceList: initPriceList(PRICE_DATA.price),
+        priceChangeHistory: PRICE_DATA.priceChangeHistory,
+
         costRules: bindMoney(PRICE_DATA.costRules),
         validationRules: bindMoney(PRICE_DATA.validationRules),
 

@@ -5,6 +5,7 @@ import IconButton from 'material-ui/IconButton';
 import FileDownload from 'material-ui/svg-icons/file/file-download';
 import CurrencyIcon from 'material-ui/svg-icons/editor/attach-money';
 import CreateIcon from 'material-ui/svg-icons/content/create';
+import HistoryIcon from 'material-ui/svg-icons/action/description';
 
 import { UserData } from '../reducers';
 import { CurrencyPair } from '../utils/Money';
@@ -12,6 +13,7 @@ import { CurrencyPair } from '../utils/Money';
 interface Props {
     userData: UserData;
     onClickCreate: (e: any) => void;
+    onClickHistory: (e: any) => void;
     onClickCurrency: (e: any) => void;
     onClickMenu: (e: any) => void;
     onClickSave: (e: any) => void;
@@ -45,6 +47,9 @@ export class NavBar extends React.Component<Props, void> {
                     <div>
                         <IconButton onClick={this.props.onClickCreate}>
                             <CreateIcon color='#FFF' />
+                        </IconButton>
+                        <IconButton onClick={this.props.onClickHistory}>
+                            <HistoryIcon color='#FFF' />
                         </IconButton>
                         {this.props.showExchangeRate.length > 0 &&
                             <IconButton onClick={this.props.onClickCurrency}>

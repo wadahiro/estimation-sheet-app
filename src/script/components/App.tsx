@@ -10,7 +10,7 @@ import Divider from 'material-ui/Divider';
 
 import * as Actions from '../actions';
 import { getVisiblePriceList, getVisibleOptions, getPurchaseDetailItems, getEnhancedCostItems, getValidationResults, isEditing, getCurrentSavedHistory } from '../selectors';
-import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, ValidationResult, SavedHistory, UserData, Option } from '../reducers';
+import { RootState, Column, Item, PurchaseItem, PurchaseDetailItem, CostItem, ValidationResult, SavedHistory, UserData, Option, ChangeHistory } from '../reducers';
 import { CurrencyPair } from '../utils/Money';
 import { NavBar } from './NavBar';
 import { SearchBox } from './SearchBox';
@@ -21,6 +21,7 @@ import { CostItems } from './CostItems';
 import { HistoryMenu } from './HistoryMenu';
 import { EditEstimationMetadataDialog } from './EditEstimationMetadataDialog';
 import { ExchangeRateDialog } from './ExchangeRateDialog';
+import { ChangeHistoryDialog } from './ChangeHistoryDialog';
 import { save } from './Utils';
 
 const style = require('./style.css');
@@ -35,6 +36,7 @@ interface Props {
     summaryColumns?: Column[];
     purchaseItemsColumns?: Column[];
     priceList?: Option[];
+    priceChangeHistory?: ChangeHistory<Item>[];
 
     searchWord?: string;
     purchaseDetailItems?: PurchaseDetailItem[];
@@ -53,13 +55,15 @@ interface State {
     showDialog?: boolean;
     showDrawer?: boolean;
     showExchangeRateDialog?: boolean;
+    showChangeHistoryDialog?: boolean;
 }
 
 class App extends React.Component<Props, State> {
     state = {
         showDialog: false,
         showDrawer: false,
-        showExchangeRateDialog: false
+        showExchangeRateDialog: false,
+        showChangeHistoryDialog: false
     };
 
     addItem = (itemId: string) => {
@@ -92,6 +96,19 @@ class App extends React.Component<Props, State> {
     closeExchangeRateDialog = () => {
         this.setState({
             showExchangeRateDialog: false
+        });
+    };
+
+    openChangeHistoryDialog = (e) => {
+        e.preventDefault();
+        this.setState({
+            showChangeHistoryDialog: true
+        });
+    };
+
+    closeChangeHistoryDialog = () => {
+        this.setState({
+            showChangeHistoryDialog: false
         });
     };
 
@@ -167,6 +184,7 @@ class App extends React.Component<Props, State> {
 
         const { estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
             priceList,
+            priceChangeHistory,
             userData,
             searchWord, purchaseDetailItems, costItems, validationResults, savedHistory,
             showExchangeRate,
@@ -176,6 +194,7 @@ class App extends React.Component<Props, State> {
             <div>
                 <NavBar userData={userData}
                     onClickCreate={this.openMetadataDialog}
+                    onClickHistory={this.openChangeHistoryDialog}
                     onClickCurrency={this.openExchangeRateDialog}
                     onClickMenu={this.openDrawer}
                     onClickSave={this.save}
@@ -271,6 +290,10 @@ class App extends React.Component<Props, State> {
                     <ExchangeRateDialog exchangeRate={userData.exchangeRate} onChangeRate={this.changeExchangeRate}
                         showExchangeRate={showExchangeRate} onClose={this.closeExchangeRateDialog} />
                 }
+
+                {this.state.showChangeHistoryDialog &&
+                    <ChangeHistoryDialog history={priceChangeHistory} onClose={this.closeChangeHistoryDialog} />
+                }
             </div >
         );
     }
@@ -285,6 +308,7 @@ function mapStateToProps(state: RootState, props: Props): Props {
         purchaseItemsColumns: state.app.present.purchaseItemsColumns,
 
         priceList: getVisibleOptions(state),
+        priceChangeHistory: state.app.present.priceChangeHistory,
 
         userData: state.app.present.userData,
 
