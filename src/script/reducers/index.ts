@@ -9,7 +9,13 @@ const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
 const includeAction = ReduxUndo.includeAction;
 
-const PRICE_DATA = require('../data/price.csv');
+
+let PRICE_DATA;
+if (process.env.NODE_ENV !== 'production') {
+    PRICE_DATA = require('../data/test.csv');
+} else {
+    PRICE_DATA = require('../data/price.csv');
+}
 
 export interface RootState {
     app: AppStateHistory;
