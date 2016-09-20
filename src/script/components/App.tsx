@@ -32,6 +32,7 @@ interface Props {
     dispatch?: Dispatch<RootState>;
     rootState?: RootState;
 
+    priceColumns?: Column[];
     estimationMetadataColumns?: Column[];
     summaryColumns?: Column[];
     purchaseItemsColumns?: Column[];
@@ -182,7 +183,7 @@ class App extends React.Component<Props, State> {
             margin: 0
         };
 
-        const { estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
+        const { priceColumns, estimationMetadataColumns, summaryColumns, purchaseItemsColumns,
             priceList,
             priceChangeHistory,
             userData,
@@ -290,7 +291,7 @@ class App extends React.Component<Props, State> {
                 }
 
                 {this.state.showChangeHistoryDialog &&
-                    <ChangeHistoryDialog history={priceChangeHistory} onClose={this.closeChangeHistoryDialog} />
+                    <ChangeHistoryDialog columns={priceColumns} history={priceChangeHistory} onClose={this.closeChangeHistoryDialog} />
                 }
             </div >
         );
@@ -301,6 +302,7 @@ function mapStateToProps(state: RootState, props: Props): Props {
     return {
         rootState: state,
 
+        priceColumns: state.app.present.priceColumns,
         estimationMetadataColumns: state.app.present.estimationMetadataColumns,
         summaryColumns: state.app.present.summaryColumns,
         purchaseItemsColumns: state.app.present.purchaseItemsColumns,

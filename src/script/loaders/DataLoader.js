@@ -8,6 +8,7 @@ const path = require('path');
 const rfc6902 = require('rfc6902');
 const jsonpointer = require('jsonpointer');
 const keyBy = require('lodash/keyBy');
+const pick = require('lodash/pick');
 
 
 module.exports = function (text) {
@@ -100,79 +101,55 @@ module.exports = function (text) {
         const showExchangeRate = getConfig(buildSettings, currentBuildSettings, 'showExchangeRate');
 
         // changelog
-        const priceChangeHistory = getConfig(buildSettings, currentBuildSettings, 'priceChangeHistory');
+        const resourcePath = this.resourcePath.substring(path.parse(this.resourcePath).root.length);
+        const workPath = path.resolve('').substring(path.parse(path.resolve('')).root.length);
+        const relativeResourcePath = resourcePath.replace(workPath + path.sep, '').replace(/\\/g, '/');
 
-        // const changes = priceChangeHistory.columns.map(x => {
-        //     // TODO filename
-        //     return Promise.all([getGitContent('.', x.from, this.resourcePath),
-        //     getGitContent('.', x.to, this.resourcePath)])
-        //         .then(result => {
-        //             const dsv = dsvFormat(',');
-        //             const c1 = keyBy(dsv.parse(result[0].content), 'itemId');
-        //             const c2 = keyBy(dsv.parse(result[1].content), 'itemId');
-
-        //             const diff = rfc6902.createPatch(c1, c2);
-
-        //             console.log(diff)
-
-        //             // console.log(diff)
-
-        //             const resolvedDiff = diff.map(x => {
-        //                 const opStr = x.op === 'add' ? '追加' : (x.op === 'replace' ? '変更' : '削除');
-        //                 const message = x.op === 'add' ? '追加' : (x.op === 'replace' ? '変更' : '削除');
-
-        //                 const before = jsonpointer.get(c1, x.path);
-        //                 const after = jsonpointer.get(c2, x.path);
-
-        //                 switch (x.op) {
-        //                     case 'add':
-        //                         return {
-        //                             title: `${after.itemId} ${after.name} の 追加`,
-        //                             subTitle: `${after.itemId} ${after.name} を新規に追加しました。`,
-        //                             op: x
-        //                         };
-        //                     case 'replace':
-        //                         const replaceTarget = jsonpointer.get(c2, '/' + x.path.split('/')[1]);
-        //                         return {
-        //                             title: `${replaceTarget.itemId} ${replaceTarget.name} の 変更`,
-        //                             subTitle: `${replaceTarget.itemId} ${replaceTarget.name} の ${x.path} を ${before} --> ${after} に変更しました`,
-        //                             op: x
-        //                         };
-        //                     case 'remove':
-        //                         return {
-        //                             title: `${before.itemId} ${before.name} の 削除`,
-        //                             subTitle: `${before.itemId} ${before.name} を 削除しました。`,
-        //                             op: x
-        //                         };
-        //                     default:
-        //                         throw 'Unexpected diff: ' + x
-        //                 }
-        //             })
-
-        //             return {
-        //                 id: `${result[0].id}..${result[1].id}`,
-        //                 fromDate: result[0].date,
-        //                 toDate: result[1].date,
-        //                 diff: resolvedDiff
-        //             };
-        //         });
-        // });
-
-        const changes = getGitContentHitory('.', 'src/script/data/test.csv', (from, to) => {
+        const changes = getGitContentHitory('.', relativeResourcePath, (from, to) => {
             const dsv = dsvFormat(',');
             const c1 = keyBy(dsv.parse(from), 'itemId');
             const c2 = keyBy(dsv.parse(to), 'itemId');
 
-            return rfc6902.createPatch(c1, c2);
+            const diff = rfc6902.createPatch(c1, c2)
+                .map(x => {
+                    if (x.op === 'replace' || x.op === 'remove') {
+                        x.oldValue = jsonpointer.get(c1, '/' + x.path.split('/')[1]);
+                    }
+                    return x;
+                })
+            return diff;
         })
             .then(result => {
+                const priceColumns = getConfig(buildSettings, currentBuildSettings, 'priceColumns');
+                const columnNames = priceColumns.map(x => x.name)
+
+                const filtered = result.map(x => {
+                    x.diff = x.diff.filter(op => {
+                        if (op.op === 'replace') {
+                            const column = op.path.split('/')[2];
+                            return columnNames.includes(column);
+                        } else {
+                            return true;
+                        }
+                    })
+                        .map(op => {
+                            if (op.op === 'add') {
+                                op.value = pick(op.value, columnNames);
+                            }
+                            return op;
+                        });
+                    return x;
+                })
+                    .filter(x => x.diff.length > 0)
+
                 callback(null, `module.exports = {
                     price: ${serialize(priceList)},
                     costRules: ${serialize(bindMoney(costRules))},
                     validationRules: ${serialize(bindMoney(validationRules))},
                     exchangeRate: ${JSON.stringify(exchangeRate)},
                     showExchangeRate: ${JSON.stringify(showExchangeRate)},
-                    priceChangeHistory: ${JSON.stringify(result)}
+                    priceChangeHistory: ${JSON.stringify(filtered)},
+                    priceColumns: ${JSON.stringify(priceColumns)}
                 }`);
             });
 

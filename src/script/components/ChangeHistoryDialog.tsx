@@ -8,10 +8,13 @@ import Subheader from 'material-ui/Subheader';
 import Divider from 'material-ui/Divider';
 import CreateIcon from 'material-ui/svg-icons/content/create';
 
-import { Item, ChangeHistory } from '../reducers';
+import { Item, Column, ChangeHistory, PatchOperation } from '../reducers';
 import { CurrencyPair, ExchangeRate } from '../utils/Money';
 
+const jsonpointer = require('jsonpointer');
+
 interface Props {
+    columns: Column[];
     history: ChangeHistory<Item>[];
     onClose: () => void;
 }
@@ -44,7 +47,7 @@ export class ChangeHistoryDialog extends React.Component<Props, void> {
     }
 
     renderList() {
-        const { history} = this.props;
+        const { columns, history} = this.props;
 
         return (
             <div>
@@ -53,11 +56,13 @@ export class ChangeHistoryDialog extends React.Component<Props, void> {
                         <List key={x.id}>
                             <Subheader>{x.toDate}</Subheader>
                             {x.diff.map(y => {
+                                const [title, message] = toMessage(columns, y);
+
                                 return (
-                                    <ListItem key={`${y.op.op}:${y.op.path}`}
+                                    <ListItem key={`${y.op}:${y.path}`}
                                         leftAvatar={<CreateIcon />}
-                                        primaryText={y.title}
-                                        secondaryText={y.subTitle}
+                                        primaryText={title}
+                                        secondaryText={message}
                                         secondaryTextLines={1}
                                         />
                                 );
@@ -67,5 +72,36 @@ export class ChangeHistoryDialog extends React.Component<Props, void> {
                 })}
             </div>
         );
+    }
+}
+
+function toMessage(columns: Column[], diff: PatchOperation<Item>): [string, string] {
+    const opLabel = diff.op === 'add' ? '追加' : (diff.op === 'replace' ? '変更' : '削除');
+
+    switch (diff.op) {
+        case 'add':
+            return [
+                `${diff.value.itemId} ${diff.value.name} の追加`,
+                `${diff.value.itemId} ${diff.value.name} を新規に追加しました。`
+            ];
+
+        case 'replace':
+            const targetName = diff.path.split('/')[2];
+            const replaceValue = diff.oldValue[targetName];
+            const label = columns.find(x => x.name === targetName).label;
+
+            return [
+                `${diff.oldValue.itemId} ${diff.oldValue.name} の変更`,
+                `${diff.oldValue.itemId} ${diff.oldValue.name} の ${label} を ${replaceValue} --> ${diff.value} に変更しました。`
+            ];
+
+        case 'remove':
+            return [
+                `${diff.oldValue.itemId} ${diff.oldValue.name} の削除`,
+                `${diff.oldValue.itemId} ${diff.oldValue.name} を削除しました。`
+            ];
+
+        default:
+            throw 'Unexpected diff: ' + diff
     }
 }

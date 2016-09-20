@@ -28,6 +28,7 @@ export interface AppStateHistory {
 }
 
 export interface AppState {
+    priceColumns: Column[];
     estimationMetadataColumns: Column[];
     summaryColumns: Column[];
     purchaseItemsColumns: Column[];
@@ -48,39 +49,39 @@ export interface ChangeHistory<T> {
     id: string;
     fromDate: string;
     toDate: string;
-    diff: {
-        title: string;
-        subTitle: string;
-        op: PatchOperation<T>;
-    }[];
+    diff: PatchOperation<T>[];
 }
 
-export type PatchOperation<T> = AddOperation<T> | ReplaceOperation
+export type PatchOperation<T> = AddOperation<T> | ReplaceOperation<T> | RemoveOperation<T>
 
 export interface AddOperation<T> {
     op: 'add';
     path: string;
-    value: T
+    value: T;
 }
-export interface ReplaceOperation {
+export interface ReplaceOperation<T> {
     op: 'replace';
     path: string;
     value: string | number;
+    oldValue: T;
 }
-export interface RemoveOperation {
+export interface RemoveOperation<T> {
     op: 'remove';
     path: string;
-    value: string | number;
+    oldValue: T;
 }
 
 export interface Column {
     name: string;
     label: string;
-    type?: 'currency' | 'percentage' | 'date';
+    type?: ColumnType;
     required?: boolean;
     options?: Option[];
     decimalPlace?: number;
+    children?: Column[];
 }
+
+export type ColumnType = 'currency' | 'percentage' | 'date' | 'quantity' | 'sumPrice' | 'sumCost' | 'group';
 
 export interface Option {
     label?: string;
@@ -178,6 +179,7 @@ function init(): AppState {
     }
 
     return {
+        priceColumns: PRICE_DATA.priceColumns,
         estimationMetadataColumns: process.env.ESTIMATION_METADATA,
         summaryColumns: process.env.SUMMARY_COLUMNS,
         purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
