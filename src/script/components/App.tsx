@@ -240,8 +240,6 @@ class App extends React.Component<Props, State> {
                     </Row>
                 </Grid>
 
-                <Divider />
-
                 <Grid className={style.grid}>
                     <Row className={style.row}>
                         <Col xs={12}>

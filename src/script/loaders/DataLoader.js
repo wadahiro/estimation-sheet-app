@@ -5,8 +5,9 @@ const buildSettings = require('../../../buildSettings');
 
 const nodegit = require('nodegit');
 const path = require('path');
-const jsonDiffPatch = require('json-diff-patch');
+const rfc6902 = require('rfc6902');
 const jsonpointer = require('jsonpointer');
+const keyBy = require('lodash/keyBy');
 
 
 module.exports = function (text) {
@@ -101,72 +102,70 @@ module.exports = function (text) {
         // changelog
         const priceChangeHistory = getConfig(buildSettings, currentBuildSettings, 'priceChangeHistory');
 
-        const changes = priceChangeHistory.map(x => {
-            // TODO filename
-            return Promise.all([getGitContent('.', x.from, 'src/script/data/test.csv'),
-            getGitContent('.', x.to, 'src/script/data/test.csv')])
-                .then(result => {
-                    const dsv = dsvFormat(',');
-                    const c1 = dsv.parse(result[0].content);
-                    const c2 = dsv.parse(result[1].content);
+        // const changes = priceChangeHistory.columns.map(x => {
+        //     // TODO filename
+        //     return Promise.all([getGitContent('.', x.from, this.resourcePath),
+        //     getGitContent('.', x.to, this.resourcePath)])
+        //         .then(result => {
+        //             const dsv = dsvFormat(',');
+        //             const c1 = keyBy(dsv.parse(result[0].content), 'itemId');
+        //             const c2 = keyBy(dsv.parse(result[1].content), 'itemId');
 
-                    const diff = jsonDiffPatch.diff(c1, c2);
+        //             const diff = rfc6902.createPatch(c1, c2);
 
-                    // console.log(diff)
+        //             console.log(diff)
 
-                    const resolvedDiff = diff.map(x => {
-                        const opStr = x.op === 'add' ? '追加' : (x.op === 'replace' ? '変更' : '削除');
-                        const message = x.op === 'add' ? '追加' : (x.op === 'replace' ? '変更' : '削除');
+        //             // console.log(diff)
 
-                        const before = jsonpointer.get(c1, x.path);
-                        const after = jsonpointer.get(c2, x.path);
+        //             const resolvedDiff = diff.map(x => {
+        //                 const opStr = x.op === 'add' ? '追加' : (x.op === 'replace' ? '変更' : '削除');
+        //                 const message = x.op === 'add' ? '追加' : (x.op === 'replace' ? '変更' : '削除');
 
-                        switch (x.op) {
-                            case 'add':
-                                return {
-                                    title: `${after.itemId} ${after.name} の 追加`,
-                                    subTitle: `${after.itemId} ${after.name} を新規に追加しました。`,
-                                    op: x
-                                };
-                            case 'replace':
-                                const replaceTarget = jsonpointer.get(c2, '/' + x.path.split('/')[1]);
-                                return {
-                                    title: `${replaceTarget.itemId} ${replaceTarget.name} の 変更`,
-                                    subTitle: `${replaceTarget.itemId} ${replaceTarget.name} の ${x.path} を ${before} --> ${after} に変更しました`,
-                                    op: x
-                                };
-                            case 'remove':
-                                return {
-                                    title: `${before.itemId} ${before.name} の 削除`,
-                                    subTitle: `${before.itemId} ${before.name} を 削除しました。`,
-                                    op: x
-                                };
-                            default:
-                                throw 'Unexpected diff: ' + x
-                        }
-                    })
+        //                 const before = jsonpointer.get(c1, x.path);
+        //                 const after = jsonpointer.get(c2, x.path);
 
-                    return {
-                        id: `${result[0].id}..${result[1].id}`,
-                        fromDate: result[0].date,
-                        toDate: result[1].date,
-                        diff: resolvedDiff
-                    };
-                });
-        });
+        //                 switch (x.op) {
+        //                     case 'add':
+        //                         return {
+        //                             title: `${after.itemId} ${after.name} の 追加`,
+        //                             subTitle: `${after.itemId} ${after.name} を新規に追加しました。`,
+        //                             op: x
+        //                         };
+        //                     case 'replace':
+        //                         const replaceTarget = jsonpointer.get(c2, '/' + x.path.split('/')[1]);
+        //                         return {
+        //                             title: `${replaceTarget.itemId} ${replaceTarget.name} の 変更`,
+        //                             subTitle: `${replaceTarget.itemId} ${replaceTarget.name} の ${x.path} を ${before} --> ${after} に変更しました`,
+        //                             op: x
+        //                         };
+        //                     case 'remove':
+        //                         return {
+        //                             title: `${before.itemId} ${before.name} の 削除`,
+        //                             subTitle: `${before.itemId} ${before.name} を 削除しました。`,
+        //                             op: x
+        //                         };
+        //                     default:
+        //                         throw 'Unexpected diff: ' + x
+        //                 }
+        //             })
 
-        Promise.all(changes)
+        //             return {
+        //                 id: `${result[0].id}..${result[1].id}`,
+        //                 fromDate: result[0].date,
+        //                 toDate: result[1].date,
+        //                 diff: resolvedDiff
+        //             };
+        //         });
+        // });
+
+        const changes = getGitContentHitory('.', 'src/script/data/test.csv', (from, to) => {
+            const dsv = dsvFormat(',');
+            const c1 = keyBy(dsv.parse(from), 'itemId');
+            const c2 = keyBy(dsv.parse(to), 'itemId');
+
+            return rfc6902.createPatch(c1, c2);
+        })
             .then(result => {
-                // console.log(result)
-                // const data = {
-                //     price: priceList,
-                //     costRules: bindMoney(costRules),
-                //     validationRules: bindMoney(validationRules),
-                //     exchangeRate: exchangeRate,
-                //     showExchangeRate: showExchangeRate
-                // };
-
-                // callback(null, `module.exports = ${serialize(data)};`);
                 callback(null, `module.exports = {
                     price: ${serialize(priceList)},
                     costRules: ${serialize(bindMoney(costRules))},
@@ -203,6 +202,65 @@ function replacer(k, v) {
 
 function applyDiscount(rate, price) {
     return price * (1 - rate);
+}
+
+function getGitContentHitory(gitPath, targetFile, diffCallback) {
+    return new Promise((resolve, reject) => {
+        let _repo;
+        let _walker;
+
+        nodegit.Repository.open(gitPath)
+            .then(function (r) {
+                _repo = r;
+                return r.getBranchCommit('HEAD');
+            })
+            .then(function (firstCommitOnMaster) {
+                console.log(firstCommitOnMaster.sha())
+                // History returns an event.
+                _walker = _repo.createRevWalk();
+                _walker.push(firstCommitOnMaster.sha());
+                _walker.sorting(nodegit.Revwalk.SORT.Time);
+
+                return _walker.fileHistoryWalk(targetFile, 500);
+            })
+            .then(commits => {
+                const changes = commits.reduce((s, x) => {
+                    x.commit.repo = _repo;
+
+                    if (s.prev !== null) {
+                        const prev = s.prev;
+                        s.result.push(new Promise(resolve => {
+                            const path = targetFile
+                            Promise.all([prev.commit.getEntry(path), x.commit.getEntry(path)])
+                                .then(entries => {
+                                    Promise.all(entries.map(x => x.getBlob()))
+                                        .then(blobs => {
+                                            resolve({
+                                                id: `${x.commit.sha()}..${prev.commit.sha()}`,
+                                                fromDate: x.commit.date(),
+                                                toDate: prev.commit.date(),
+                                                diff: diffCallback(blobs[1].toString(), blobs[0].toString())
+                                            });
+                                        })
+                                })
+                        }));
+                    }
+                    s.prev = x;
+                    return s;
+                }, { result: [], prev: null })
+
+                Promise.all(changes.result)
+                    .then(result => {
+                        resolve(result);
+                    });
+
+            })
+            .catch(err => {
+                console.error(err)
+                reject(err);
+            })
+            .done();
+    });
 }
 
 function getGitContent(gitPath, tag, targetFile) {

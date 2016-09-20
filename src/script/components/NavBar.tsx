@@ -45,18 +45,18 @@ export class NavBar extends React.Component<Props, void> {
             <AppBar title={this.getTitle()}
                 iconElementRight={
                     <div>
-                        <IconButton onClick={this.props.onClickCreate}>
+                        <IconButton tooltip='見積もり情報の記入' onClick={this.props.onClickCreate}>
                             <CreateIcon color='#FFF' />
                         </IconButton>
-                        <IconButton onClick={this.props.onClickHistory}>
+                        <IconButton tooltip='変更履歴の参照' onClick={this.props.onClickHistory}>
                             <HistoryIcon color='#FFF' />
                         </IconButton>
                         {this.props.showExchangeRate.length > 0 &&
-                            <IconButton onClick={this.props.onClickCurrency}>
+                            <IconButton tooltip='為替レートの変更' onClick={this.props.onClickCurrency}>
                                 <CurrencyIcon color='#FFF' />
                             </IconButton>
                         }
-                        <IconButton onClick={this.props.onClickSave}>
+                        <IconButton tooltip='記入内容をダウンロード' onClick={this.props.onClickSave}>
                             <FileDownload color='#FFF' />
                         </IconButton>
                     </div>

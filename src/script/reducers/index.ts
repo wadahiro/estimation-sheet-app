@@ -76,7 +76,7 @@ export interface RemoveOperation {
 export interface Column {
     name: string;
     label: string;
-    type?: 'currency' | 'percentage';
+    type?: 'currency' | 'percentage' | 'date';
     required?: boolean;
     options?: Option[];
     decimalPlace?: number;
