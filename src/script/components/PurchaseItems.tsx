@@ -101,6 +101,9 @@ export class PurchaseItems extends React.Component<Props, void> {
             whiteSpace: 'normal'
         };
 
+        const itemColumns = columns.filter(x => x.type !== 'text');
+        const textColumns = columns.filter(x => x.type === 'text');
+
         return (
             <Paper zDepth={2} >
                 <Table
@@ -111,7 +114,7 @@ export class PurchaseItems extends React.Component<Props, void> {
                         <TableRow>
                             <TableHeaderColumn style={idColStyle}>#</TableHeaderColumn>
 
-                            {columns.map(x => {
+                            {itemColumns.map(x => {
                                 return (
                                     <TableHeaderColumn key={x.name} style={columnStyle}>
                                         {x.label}
@@ -128,32 +131,70 @@ export class PurchaseItems extends React.Component<Props, void> {
 
                     <TableBody displayRowCheckbox={false}>
                         {purchaseDetailItems.map(x => {
-                            return (
-                                <TableRow key={x.id} selectable={false}>
-                                    <TableRowColumn style={idColStyle}>{x.id}</TableRowColumn>
-                                    {columns.map(y => {
-                                        const value = format(y.type, x[y.name], exchangeRate, y.decimalPlace);
-
-                                        if (Array.isArray(value)) {
-                                            return (
-                                                <TableRowColumn key={y.name} style={columnStyle}>{this.renderMultiValues(value)}</TableRowColumn>
-                                            );
-                                        }
-
-                                        return (
-                                            <TableRowColumn key={y.name} style={columnStyle}>{value}</TableRowColumn>
-                                        );
-                                    })}
-
-                                    <TableRowColumn style={columnStyle}>{this.renderQuantity(x)}</TableRowColumn>
-                                    <TableRowColumn style={priceColStyle}>{this.renderPrice(x)}</TableRowColumn>
-                                    <TableRowColumn>{this.renderAction(x)}</TableRowColumn>
-                                </TableRow>
-                            );
+                            if (textColumns.length === 0) {
+                                return this.renderRow(itemColumns, x, idColStyle, columnStyle, priceColStyle);
+                            } else {
+                                return this.renderMultiRow(itemColumns, textColumns, x, idColStyle, columnStyle, priceColStyle);
+                            }
                         })}
                     </TableBody>
                 </Table>
             </Paper>
         );
+    }
+
+    renderRow(itemColumns: Column[], x: PurchaseDetailItem, idColStyle, columnStyle, priceColStyle) {
+        const { exchangeRate } = this.props;
+
+        return (
+            <TableRow key={x.id} selectable={false}>
+                <TableRowColumn style={idColStyle}>{x.id}</TableRowColumn>
+                {itemColumns.map(y => {
+                    const value = format(y.type, x[y.name], exchangeRate, y.decimalPlace);
+
+                    if (Array.isArray(value)) {
+                        return (
+                            <TableRowColumn key={y.name} style={columnStyle}>{this.renderMultiValues(value)}</TableRowColumn>
+                        );
+                    }
+
+                    return (
+                        <TableRowColumn key={y.name} style={columnStyle}>{value}</TableRowColumn>
+                    );
+                })}
+
+                <TableRowColumn style={columnStyle}>{this.renderQuantity(x)}</TableRowColumn>
+                <TableRowColumn style={priceColStyle}>{this.renderPrice(x)}</TableRowColumn>
+                <TableRowColumn>{this.renderAction(x)}</TableRowColumn>
+            </TableRow>
+        );
+    }
+
+    renderMultiRow(itemColumns: Column[], textColumns: Column[], x: PurchaseDetailItem, idColStyle, columnStyle, priceColStyle) {
+        const { exchangeRate } = this.props;
+
+        return [
+            this.renderRow(itemColumns, x, idColStyle, columnStyle, priceColStyle),
+
+            <TableRow key={`${x.id}_text`} selectable={false}>
+                <TableRowColumn style={columnStyle}></TableRowColumn>
+                <TableRowColumn style={columnStyle} colSpan={itemColumns.length + 3}>
+                    {textColumns.map(textCol => {
+                        const value = format(textCol.type, x[textCol.name], exchangeRate, textCol.decimalPlace);
+                        if (value === undefined || value === '') {
+                            return null;
+                        } else {
+                            return (
+                                <div key={textCol.name}>
+                                    <h3>{textCol.label}</h3>
+                                    <p>{value}</p>
+                                </div>
+                            );
+                        }
+                    })
+                    }
+                </TableRowColumn>
+            </TableRow>
+        ];
     }
 }
