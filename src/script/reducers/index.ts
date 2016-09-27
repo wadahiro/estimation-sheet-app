@@ -226,6 +226,9 @@ function initPriceList(list: any[]): Item[] {
 }
 
 function toMoney(json: MoneyJSON): Money {
+    if (!json) {
+        return new Money(0, 'JPY');
+    }
     return new Money(round(json.amount, 0), json.currency);
 }
 
