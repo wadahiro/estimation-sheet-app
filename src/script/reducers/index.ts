@@ -81,7 +81,7 @@ export interface Column {
     children?: Column[];
 }
 
-export type ColumnType = 'currency' | 'percentage' | 'date' | 'quantity' | 'sumPrice' | 'sumCost' | 'group';
+export type ColumnType = 'currency' | 'percentage' | 'date' | 'quantity' | 'sumPrice' | 'sumCost' | 'group' | 'text';
 
 export interface Option {
     label?: string;

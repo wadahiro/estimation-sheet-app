@@ -173,24 +173,31 @@ export class PurchaseItems extends React.Component<Props, void> {
     renderMultiRow(itemColumns: Column[], textColumns: Column[], x: PurchaseDetailItem, idColStyle, columnStyle, priceColStyle) {
         const { exchangeRate } = this.props;
 
+        const textItems = textColumns.map(textCol => {
+            const value = format(textCol.type, x[textCol.name], exchangeRate, textCol.decimalPlace);
+            return {
+                name: textCol.name,
+                label: textCol.label,
+                value
+            };
+        }).filter(x => x.value !== undefined && x.value !== '');
+
+        if (textItems.length === 0) {
+            return [this.renderRow(itemColumns, x, idColStyle, columnStyle, priceColStyle)];
+        }
+
         return [
             this.renderRow(itemColumns, x, idColStyle, columnStyle, priceColStyle),
-
             <TableRow key={`${x.id}_text`} selectable={false}>
                 <TableRowColumn style={columnStyle}></TableRowColumn>
                 <TableRowColumn style={columnStyle} colSpan={itemColumns.length + 3}>
-                    {textColumns.map(textCol => {
-                        const value = format(textCol.type, x[textCol.name], exchangeRate, textCol.decimalPlace);
-                        if (value === undefined || value === '') {
-                            return null;
-                        } else {
-                            return (
-                                <div key={textCol.name}>
-                                    <h3>{textCol.label}</h3>
-                                    <p>{value}</p>
-                                </div>
-                            );
-                        }
+                    {textItems.map(item => {
+                        return (
+                            <div key={item.name}>
+                                <h3>{item.label}</h3>
+                                <p>{item.value}</p>
+                            </div>
+                        );
                     })
                     }
                 </TableRowColumn>
