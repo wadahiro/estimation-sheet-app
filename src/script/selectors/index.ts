@@ -20,7 +20,7 @@ export const getVisibleOptions = createSelector<RootState, Option[], Item[]>(
     (priceList) => {
         const priceOptions: Option[] = priceList.map(x => {
             return {
-                text: `${x.onSale ? '' : '(新規販売停止) '} ${x.name} ${x.itemId} ${x.menu} ${x.unit}`,
+                text: `${x.itemId} ${x.onSale ? '' : '(新規販売停止) '} ${x.name} ${x.menu} ${x.unit}`,
                 value: x.itemId,
                 onSale: x.onSale
             } as Option;
