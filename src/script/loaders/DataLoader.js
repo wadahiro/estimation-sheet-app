@@ -165,8 +165,9 @@ function getConfig(defaultSettings, currentSettings, key) {
 
 function bindMoney(rules) {
     return rules.map(x => {
-        x.calc = Function.call(null, `return function calc(items) { var Money = this; return ${x.calc.toString()}(Money, items)}`)();
-        return x;
+        const rule = Object.assign({}, x);
+        rule.calc = Function.call(null, `return function calc(items) { var Money = this; return ${x.calc.toString()}(Money, items)}`)();
+        return rule;
     });
 }
 
