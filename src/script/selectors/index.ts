@@ -43,7 +43,7 @@ export const getPurchaseDetailItems = createSelector<RootState, PurchaseDetailIt
                 right: calcPrice => {
                     const sum = calcPrice(item, x.quantity);
 
-                    // calc price from sumPrice because threr is no price definition
+                    // calc price from sumPrice because there is no price definition
                     const p = sum.divide(x.quantity);
                     return [p, sum];
                 }

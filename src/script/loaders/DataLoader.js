@@ -73,9 +73,9 @@ module.exports = function (text) {
                     // discount
                     const discountPrice = rule.discountPrice(x, price, discountRate, seller, exchangeRate);
 
-                    x.price = Function.call(null, `return function calcPrice(item, quantity) { var Money = this; var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
+                    x.price = Function.call(null, `return function calcPrice(item, quantity) { var Money = this; var price = ${JSON.stringify(discountPrice)}; return ${rule.calc.toString()}(Money, item, price, quantity)}`)();
 
-                    x.supplierPrice = Function.call(null, `return function calcSupplierPrice(item, quantity) { var Money = this; var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(item, price, quantity)}`)();
+                    x.supplierPrice = Function.call(null, `return function calcSupplierPrice(item, quantity) { var Money = this; var price = ${JSON.stringify(supplierPrice)}; return ${rule.calc.toString()}(Money, item, price, quantity)}`)();
                 }
             });
 
@@ -165,7 +165,7 @@ function getConfig(defaultSettings, currentSettings, key) {
 
 function bindMoney(rules) {
     return rules.map(x => {
-        x.calc = Function.call(null, `return function calc(items) { var Money = this; return ${x.calc.toString()}(items)}`)();
+        x.calc = Function.call(null, `return function calc(items) { var Money = this; return ${x.calc.toString()}(Money, items)}`)();
         return x;
     });
 }
