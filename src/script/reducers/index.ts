@@ -9,7 +9,13 @@ const ReduxUndo = require('redux-undo');
 const undoable = ReduxUndo.default;
 const includeAction = ReduxUndo.includeAction;
 
-const PRICE_DATA = require('../data/price.csv');
+
+let PRICE_DATA;
+if (process.env.NODE_ENV !== 'production') {
+    PRICE_DATA = require('../data/test.csv');
+} else {
+    PRICE_DATA = require('../data/price.csv');
+}
 
 export interface RootState {
     app: AppStateHistory;
@@ -22,11 +28,13 @@ export interface AppStateHistory {
 }
 
 export interface AppState {
+    priceColumns: Column[];
     estimationMetadataColumns: Column[];
     summaryColumns: Column[];
     purchaseItemsColumns: Column[];
 
     priceList: Item[];
+    priceChangeHistory: ChangeHistory<Item>[];
     costRules: CostRule[];
     validationRules: ValidationRule[];
     showExchangeRate: CurrencyPair[];
@@ -37,14 +45,43 @@ export interface AppState {
     savedHistory: UserData[];
 }
 
+export interface ChangeHistory<T> {
+    id: string;
+    fromDate: string;
+    toDate: string;
+    diff: PatchOperation<T>[];
+}
+
+export type PatchOperation<T> = AddOperation<T> | ReplaceOperation<T> | RemoveOperation<T>
+
+export interface AddOperation<T> {
+    op: 'add';
+    path: string;
+    value: T;
+}
+export interface ReplaceOperation<T> {
+    op: 'replace';
+    path: string;
+    value: string | number;
+    oldValue: T;
+}
+export interface RemoveOperation<T> {
+    op: 'remove';
+    path: string;
+    oldValue: T;
+}
+
 export interface Column {
     name: string;
     label: string;
-    type?: 'currency' | 'percentage';
+    type?: ColumnType;
     required?: boolean;
     options?: Option[];
     decimalPlace?: number;
+    children?: Column[];
 }
+
+export type ColumnType = 'currency' | 'percentage' | 'date' | 'quantity' | 'sumPrice' | 'sumCost' | 'group';
 
 export interface Option {
     label?: string;
@@ -142,12 +179,15 @@ function init(): AppState {
     }
 
     return {
+        priceColumns: PRICE_DATA.priceColumns,
         estimationMetadataColumns: process.env.ESTIMATION_METADATA,
         summaryColumns: process.env.SUMMARY_COLUMNS,
         purchaseItemsColumns: process.env.PURCHASE_ITEMS_COLUMNS,
 
         searchWord: null,
         priceList: initPriceList(PRICE_DATA.price),
+        priceChangeHistory: PRICE_DATA.priceChangeHistory,
+
         costRules: bindMoney(PRICE_DATA.costRules),
         validationRules: bindMoney(PRICE_DATA.validationRules),
 

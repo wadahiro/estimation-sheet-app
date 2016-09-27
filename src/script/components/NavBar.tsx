@@ -5,6 +5,7 @@ import IconButton from 'material-ui/IconButton';
 import FileDownload from 'material-ui/svg-icons/file/file-download';
 import CurrencyIcon from 'material-ui/svg-icons/editor/attach-money';
 import CreateIcon from 'material-ui/svg-icons/content/create';
+import HistoryIcon from 'material-ui/svg-icons/action/description';
 
 import { UserData } from '../reducers';
 import { CurrencyPair } from '../utils/Money';
@@ -12,6 +13,7 @@ import { CurrencyPair } from '../utils/Money';
 interface Props {
     userData: UserData;
     onClickCreate: (e: any) => void;
+    onClickHistory: (e: any) => void;
     onClickCurrency: (e: any) => void;
     onClickMenu: (e: any) => void;
     onClickSave: (e: any) => void;
@@ -43,15 +45,18 @@ export class NavBar extends React.Component<Props, void> {
             <AppBar title={this.getTitle()}
                 iconElementRight={
                     <div>
-                        <IconButton onClick={this.props.onClickCreate}>
+                        <IconButton tooltip='見積もり情報の記入' onClick={this.props.onClickCreate}>
                             <CreateIcon color='#FFF' />
                         </IconButton>
+                        <IconButton tooltip='変更履歴の参照' onClick={this.props.onClickHistory}>
+                            <HistoryIcon color='#FFF' />
+                        </IconButton>
                         {this.props.showExchangeRate.length > 0 &&
-                            <IconButton onClick={this.props.onClickCurrency}>
+                            <IconButton tooltip='為替レートの変更' onClick={this.props.onClickCurrency}>
                                 <CurrencyIcon color='#FFF' />
                             </IconButton>
                         }
-                        <IconButton onClick={this.props.onClickSave}>
+                        <IconButton tooltip='記入内容をダウンロード' onClick={this.props.onClickSave}>
                             <FileDownload color='#FFF' />
                         </IconButton>
                     </div>

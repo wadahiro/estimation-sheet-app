@@ -1,4 +1,4 @@
-import { RootState } from '../reducers';
+import { RootState, ColumnType } from '../reducers';
 import { Money, CurrencyType, isMoney, ExchangeRate, round } from '../utils/Money';
 
 const moment = require('moment');
@@ -21,8 +21,7 @@ export function formatCurrency(value: Money, exchangeRate: ExchangeRate, decimal
     return resolvedValue;
 }
 
-export function format(type: 'currency' | 'percentage', value: string | number | Money, exchangeRate: ExchangeRate, decimalPlace?: number): string | string[] {
-
+export function format(type: ColumnType, value: string | number | Money, exchangeRate: ExchangeRate, decimalPlace?: number): string | string[] {
     switch (type) {
         case 'currency':
             if (isMoney(value)) {

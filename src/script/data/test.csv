@@ -1,0 +1,4 @@
+onSale,name,menu,unit,itemId,supplier,supplierPrice,supplierPriceCurrency,price,distributorEnabled,seller_distributor,aboutPrice,comment
+true,test001,,1node,TEST-001,なし,0,JPY,1000000,true,0.1,,
+true,test002,,1node,TEST-002,なし,0,JPY,2000000,true,0.1,,
+true,test004,,1node,TEST-004,なし,0,JPY,2500000,true,0.1,,

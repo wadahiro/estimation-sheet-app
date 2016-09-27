@@ -29,6 +29,7 @@ require('material-ui/Dialog');
 require('material-ui/Card');
 require('material-ui/MenuItem');
 require('material-ui/TextField');
+require('material-ui/DatePicker');
 require('material-ui/svg-icons/file/file-download');
 
 // for dev
